@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+    <title>LUMIÈRE Remote</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+        
+        html, body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #09090b;
+            color: #f5f5dc;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        /* Override any yellow/gold colors */
+        * {
+            --tw-text-opacity: 1;
+            --tw-bg-opacity: 1;
+        }
+
+        .text-yellow-*, .bg-yellow-*, .border-yellow-*,
+        .text-amber-*, .bg-amber-*, .border-amber-*,
+        .text-gold {
+            color: #ffffff !important;
+            background-color: transparent !important;
+            border-color: rgba(255, 255, 255, 0.3) !important;
+        }
+
+        /* Remove yellow tint from icons */
+        iconify-icon {
+            filter: none !important;
+            color: #f5f5dc !important;
+        }
+
+        /* Settings Modal Styles */
+        #settingsModal {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        #settingsModal input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        #settingsModal input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+        }
+
+        #settingsModal input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Advanced Animations */
+        @keyframes slideDown { 
+            0% { opacity: 0; transform: translateY(-20px); } 
+            100% { opacity: 1; transform: translateY(0); } 
+        }
+        @keyframes scaleIn { 
+            0% { opacity: 0; transform: scale(0.8); } 
+            100% { opacity: 1; transform: scale(1); } 
+        }
+        @keyframes fadeInUp { 
+            0% { opacity: 0; transform: translateY(60px); } 
+            100% { opacity: 1; transform: translateY(0); } 
+        }
+        @keyframes glow {
+            0%, 100% { 
+                box-shadow: 0 8px 24px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            }
+            50% { 
+                box-shadow: 0 12px 40px rgba(255, 255, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            }
+        }
+        @keyframes bounce {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+        @keyframes button-pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+        }
+
+        header {
+        }
+
+        .remote-container {
+        }
+
+        .nav-btn {
+        }
+
+        .playback-section {
+        }
+
+        .watched-section {
+        }
+
+        @supports (padding: max(0px)) {
+            header { padding: 1.5rem max(1.5rem, env(safe-area-inset-left)); }
+            .remote-container { padding: 1rem max(1.5rem, env(safe-area-inset-left)); padding-bottom: max(0.5rem, env(safe-area-inset-bottom)); }
+            .watched-section { padding: 1rem max(1rem, env(safe-area-inset-left)); padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+        }
+    </style>
+</head>
+<body class="min-h-screen overflow-x-hidden selection:bg-white/10 bg-[#09090b] relative" style="scrollbar-width: none; -ms-overflow-style: none;">
+    <header class="fixed top-0 left-0 right-0 z-50 px-6 md:px-12 pt-6 pb-6">
+        <div class="flex justify-between items-center">
+            <button id="closeBtn" class="header-btn text-white hover:opacity-80 transition-opacity">
+                <iconify-icon icon="solar:close-circle-linear" class="w-6 h-6"></iconify-icon>
+            </button>
+            <div class="flex items-center gap-2">
+                <div id="statusDot" class="w-2 h-2 rounded-full transition-all duration-300" style="background-color: #9ca3af; box-shadow: 0 0 8px rgba(156, 163, 175, 0.5);"></div>
+                <h1 id="connectionStatus" class="text-lg tracking-tight font-medium transition-colors duration-300" style="color: #9ca3af;">Connecting...</h1>
+            </div>
+            <button id="powerBtn" class="header-btn text-white hover:opacity-80 transition-opacity">
+                <iconify-icon icon="solar:settings-linear" class="w-6 h-6"></iconify-icon>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex flex-col h-screen pt-20">
+        <div class="remote-container flex-1 flex flex-col justify-center px-6 md:px-12 gap-8 overflow-y-auto">
+            
+            <!-- D-Pad Navigation -->
+            <div class="flex justify-center nav-btn">
+                <div class="relative w-56 h-56 glass-card rounded-3xl flex items-center justify-center">
+                    <button class="dpad-btn dpad-up" id="upBtn">
+                        <iconify-icon icon="solar:alt-arrow-up-linear" class="w-6 h-6"></iconify-icon>
+                    </button>
+                    <button class="dpad-btn dpad-left" id="leftBtn">
+                        <iconify-icon icon="solar:alt-arrow-left-linear" class="w-6 h-6"></iconify-icon>
+                    </button>
+                    <button class="dpad-btn dpad-right" id="rightBtn">
+                        <iconify-icon icon="solar:alt-arrow-right-linear" class="w-6 h-6"></iconify-icon>
+                    </button>
+                    <button class="dpad-btn dpad-down" id="downBtn">
+                        <iconify-icon icon="solar:alt-arrow-down-linear" class="w-6 h-6"></iconify-icon>
+                    </button>
+                    <button class="dpad-center" id="selectBtn">
+                        <iconify-icon icon="solar:check-circle-linear" class="w-7 h-7"></iconify-icon>
+                    </button>
+                </div>
+            </div>
+
+            <style>
+                /* Header Buttons */
+                .header-btn {
+                    background: none;
+                    border: none;
+                    color: #f5f5dc;
+                    cursor: pointer;
+                    padding: 0.5rem;
+                    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                
+                .header-btn:active {
+                    animation: button-pop 0.4s ease-out;
+                }
+                
+                .header-btn iconify-icon {
+                    color: #ffffff;
+                    filter: none !important;
+                }
+
+                /* D-Pad Buttons */
+                .dpad-btn {
+                    position: absolute;
+                    width: 60px;
+                    height: 60px;
+                    border-radius: 14px;
+                    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
+                    border: 1.5px solid rgba(255, 255, 255, 0.3);
+                    color: #f5f5dc;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+                    box-shadow: 0 8px 24px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+                    backdrop-filter: blur(20px);
+                    padding: 0;
+                }
+
+                .dpad-btn iconify-icon {
+                    width: 24px !important;
+                    height: 24px !important;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #ffffff;
+                    filter: none !important;
+                }
+
+                .dpad-btn:hover {
+                    background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.15) 100%);
+                    animation: glow 1.5s ease-in-out infinite;
+                    border-color: rgba(255, 255, 255, 0.5);
+                }
+
+                .dpad-btn:active {
+                    animation: bounce 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+                    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1), inset 0 2px 4px rgba(0, 0, 0, 0.2);
+                }
+
+                .dpad-up { top: 8px; left: 50%; transform: translateX(-50%); }
+                .dpad-down { bottom: 8px; left: 50%; transform: translateX(-50%); }
+                .dpad-left { left: 8px; top: 50%; transform: translateY(-50%); }
+                .dpad-right { right: 8px; top: 50%; transform: translateY(-50%); }
+
+                .dpad-center {
+                    width: 76px;
+                    height: 76px;
+                    border-radius: 50%;
+                    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+                    border: 2px solid rgba(255, 255, 255, 0.35);
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+                    color: #f5f5dc;
+                    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+                    backdrop-filter: blur(20px);
+                    padding: 0;
+                }
+
+                .dpad-center iconify-icon {
+                    width: 32px !important;
+                    height: 32px !important;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #ffffff;
+                    filter: none !important;
+                }
+
+                .dpad-center:hover {
+                    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.15) 100%);
+                    animation: glow 1.5s ease-in-out infinite;
+                    border-color: rgba(255, 255, 255, 0.5);
+                }
+
+                .dpad-center:active {
+                    animation: bounce 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+                    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.15), inset 0 2px 4px rgba(0, 0, 0, 0.2);
+                }
+
+                /* Playback Buttons */
+                .playback-btn-glass {
+                    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
+                    border: 1.5px solid rgba(255, 255, 255, 0.3);
+                    box-shadow: 0 8px 24px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+                    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+                    backdrop-filter: blur(20px);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 0;
+                    cursor: pointer;
+                    border-radius: 14px;
+                }
+
+                .playback-btn-glass iconify-icon {
+                    width: 24px !important;
+                    height: 24px !important;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #ffffff;
+                    filter: none !important;
+                }
+
+                .playback-btn-glass:hover {
+                    background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.15) 100%);
+                    animation: glow 1.5s ease-in-out infinite;
+                    border-color: rgba(255, 255, 255, 0.5);
+                }
+
+                .playback-btn-glass:active {
+                    animation: bounce 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+                    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1), inset 0 2px 4px rgba(0, 0, 0, 0.2);
+                }
+
+                .play-pause-btn {
+                    width: 72px;
+                    height: 72px;
+                }
+
+                .play-pause-btn:hover {
+                    animation: glow 1.5s ease-in-out infinite;
+                }
+
+                .rewind-forward-btn {
+                    width: 60px;
+                    height: 60px;
+                }
+            </style>
+
+            <!-- Playback Controls -->
+            <div class="flex justify-center gap-6 playback-section">
+                <button class="playback-btn-glass rewind-forward-btn" id="rewindBtn">
+                    <iconify-icon icon="solar:rewind-10-linear" class="w-6 h-6"></iconify-icon>
+                </button>
+                <button class="playback-btn-glass play-pause-btn" id="playPauseBtn">
+                    <iconify-icon icon="solar:play-bold" class="w-8 h-8"></iconify-icon>
+                </button>
+                <button class="playback-btn-glass rewind-forward-btn" id="fastForwardBtn">
+                    <iconify-icon icon="solar:forward-10-linear" class="w-6 h-6"></iconify-icon>
+                </button>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div id="settingsModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 flex items-center justify-center" style="display: none;">
+            <div class="glass-card rounded-2xl p-6 m-4 max-w-sm w-full animate-in fade-in zoom-in duration-300">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-white">Settings</h2>
+                    <button id="closeSettingsBtn" class="text-white hover:opacity-80 transition-opacity">
+                        <iconify-icon icon="solar:close-circle-linear" class="w-6 h-6"></iconify-icon>
+                    </button>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <p class="text-sm text-gray-400 mb-2">Volume</p>
+                        <input type="range" id="volumeSlider" min="0" max="100" value="50" class="w-full">
+                    </div>
+                    
+                    <div>
+                        <p class="text-sm text-gray-400 mb-2">Brightness</p>
+                        <input type="range" id="brightnessSlider" min="0" max="100" value="100" class="w-full">
+                    </div>
+                    
+                    <div class="border-t border-zinc-700 pt-4">
+                        <button id="settingsBackBtn" class="w-full playback-btn-glass py-2 rounded-lg text-white font-medium">
+                            Back
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recently Watched (Collapsible) -->
+        <div id="watchedContainer" class="watched-section glass-card m-4 rounded-2xl p-4 flex-shrink-0 border-t border-zinc-800/50 transition-all duration-300" style="display: block;">
+            <button id="toggleWatched" class="w-full flex items-center justify-between mb-3 hover:opacity-80 transition-opacity cursor-pointer active:opacity-60" style="background: none; border: none; padding: 0;">
+                <p class="text-xs uppercase tracking-widest font-semibold text-white">Recently Watched</p>
+                <iconify-icon id="toggleIcon" icon="solar:alt-arrow-down-linear" class="w-4 h-4 transition-transform duration-500 text-white" style="transform: rotate(0deg);"></iconify-icon>
+            </button>
+            <div id="watchedContent" class="flex gap-3 overflow-x-auto pb-2 transition-all duration-500" style="max-height: 140px; overflow-y: hidden; opacity: 1;">
+                <!-- Items generated by JS -->
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5000/api';
+
+        // Real Connection Status with Server Check
+        const statusEl = document.getElementById('connectionStatus');
+        const statusDot = document.getElementById('statusDot');
+        let isConnected = false;
+        let deviceConnected = false;
+
+        async function updateConnectionStatus() {
+            // Check internet connection
+            const online = navigator.onLine;
+            
+            // Try to check backend connection
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`, { timeout: 3000 });
+                deviceConnected = response.ok;
+            } catch (err) {
+                deviceConnected = false;
+            }
+
+            if (online && deviceConnected) {
+                statusEl.textContent = 'Connected';
+                statusDot.style.backgroundColor = '#ffffff';
+                statusDot.style.boxShadow = '0 0 12px rgba(255, 255, 255, 0.8)';
+                statusEl.style.color = '#ffffff';
+                isConnected = true;
+            } else if (online) {
+                statusEl.textContent = 'No Device';
+                statusDot.style.backgroundColor = '#9ca3af';
+                statusDot.style.boxShadow = '0 0 8px rgba(156, 163, 175, 0.5)';
+                statusEl.style.color = '#9ca3af';
+                isConnected = false;
+            } else {
+                statusEl.textContent = 'Offline';
+                statusDot.style.backgroundColor = '#9ca3af';
+                statusDot.style.boxShadow = '0 0 8px rgba(156, 163, 175, 0.5)';
+                statusEl.style.color = '#9ca3af';
+                isConnected = false;
+            }
+        }
+
+        updateConnectionStatus();
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+        setInterval(updateConnectionStatus, 5000);
+
+        // Send remote commands to backend
+        async function sendRemoteCommand(command, value = null) {
+            try {
+                const payload = { command };
+                if (value !== null) payload.value = value;
+                
+                const response = await fetch(`${API_BASE_URL}/remote/command`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    console.warn(`Command failed: ${command}`);
+                }
+            } catch (err) {
+                console.log(`Could not send command: ${command}`, err);
+            }
+        }
+
+        // Recently Watched - Fetch from localStorage or API
+        async function loadRecentlyWatched() {
+            try {
+                // Try to get from localStorage first
+                const stored = localStorage.getItem('lumiereRecentlyWatched');
+                let recentlyWatched = stored ? JSON.parse(stored) : [];
+
+                if (!recentlyWatched.length) {
+                    // Fallback to API trending if no history
+                    const response = await fetch(`${API_BASE_URL}/movies/trending`);
+                    const data = await response.json();
+                    if (data.success && data.data.results) {
+                        recentlyWatched = data.data.results.slice(0, 8).map(item => ({
+                            id: item.id,
+                            title: item.title || item.name,
+                            poster: item.poster_path ? `https://image.tmdb.org/t/p/w200${item.poster_path}` : null,
+                            type: item.media_type || 'movie'
+                        }));
+                    }
+                }
+
+                if (recentlyWatched.length > 0) {
+                    showRecentlyWatched(recentlyWatched);
+                }
+            } catch (err) {
+                console.log('Could not load recently watched:', err);
+            }
+        }
+
+        function showRecentlyWatched(items) {
+            const container = document.getElementById('watchedContainer');
+            const content = document.getElementById('watchedContent');
+            
+            container.style.display = 'block';
+            content.innerHTML = '';
+
+            if (!items || items.length === 0) {
+                content.innerHTML = '<p class="text-xs text-zinc-500 italic py-2">No recently watched</p>';
+                return;
+            }
+
+            items.forEach((item, index) => {
+                if (item.poster) {
+                    const div = document.createElement('div');
+                    div.className = 'flex-shrink-0 w-20 h-28 rounded-lg overflow-hidden cursor-pointer hover:scale-110 transition-transform duration-300';
+                    div.style.animationDelay = `${index * 50}ms`;
+                    div.innerHTML = `<img src="${item.poster}" alt="${item.title}" class="w-full h-full object-cover">`;
+                    content.appendChild(div);
+                }
+            });
+        }
+
+        // Toggle Recently Watched
+        let isWatchedExpanded = true;
+        
+        function setupToggleWatched() {
+            const toggleBtn = document.getElementById('toggleWatched');
+            const content = document.getElementById('watchedContent');
+            const icon = document.getElementById('toggleIcon');
+            
+            if (!toggleBtn) return;
+            
+            toggleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                isWatchedExpanded = !isWatchedExpanded;
+                console.log('Toggle clicked, expanded:', isWatchedExpanded);
+                
+                if (isWatchedExpanded) {
+                    content.style.maxHeight = '140px';
+                    content.style.opacity = '1';
+                    icon.style.transform = 'rotate(0deg)';
+                } else {
+                    content.style.maxHeight = '0px';
+                    content.style.opacity = '0';
+                    icon.style.transform = 'rotate(180deg)';
+                }
+            });
+        }
+        
+        // Setup toggle after DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupToggleWatched);
+        } else {
+            setupToggleWatched();
+        }
+
+        // Load recently watched on startup
+        loadRecentlyWatched();
+
+        const remoteState = { isPlaying: false };
+
+        // D-Pad Navigation
+        document.getElementById('upBtn')?.addEventListener('click', () => {
+            sendRemoteCommand('up');
+            console.log('Up');
+        });
+        
+        document.getElementById('downBtn')?.addEventListener('click', () => {
+            sendRemoteCommand('down');
+            console.log('Down');
+        });
+        
+        document.getElementById('leftBtn')?.addEventListener('click', () => {
+            sendRemoteCommand('left');
+            console.log('Left');
+        });
+        
+        document.getElementById('rightBtn')?.addEventListener('click', () => {
+            sendRemoteCommand('right');
+            console.log('Right');
+        });
+        
+        document.getElementById('selectBtn')?.addEventListener('click', () => {
+            sendRemoteCommand('select');
+            console.log('Select');
+        });
+
+        // Playback Controls
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        playPauseBtn?.addEventListener('click', function() {
+            remoteState.isPlaying = !remoteState.isPlaying;
+            sendRemoteCommand(remoteState.isPlaying ? 'play' : 'pause');
+            const icon = remoteState.isPlaying ? 'solar:pause-bold' : 'solar:play-bold';
+            this.innerHTML = `<iconify-icon icon="${icon}" class="w-8 h-8"></iconify-icon>`;
+            console.log(remoteState.isPlaying ? 'Playing' : 'Paused');
+        });
+
+        document.getElementById('rewindBtn')?.addEventListener('click', () => {
+            sendRemoteCommand('rewind');
+            console.log('Rewind 10s');
+        });
+
+        document.getElementById('fastForwardBtn')?.addEventListener('click', () => {
+            sendRemoteCommand('forward');
+            console.log('Forward 10s');
+        });
+
+        // Header Controls
+        document.getElementById('closeBtn')?.addEventListener('click', () => {
+            window.location.href = 'index.html';
+            console.log('Go Home');
+        });
+
+        document.getElementById('powerBtn')?.addEventListener('click', () => {
+            document.getElementById('settingsModal').style.display = 'flex';
+            console.log('Open Settings');
+        });
+
+        document.getElementById('closeSettingsBtn')?.addEventListener('click', () => {
+            document.getElementById('settingsModal').style.display = 'none';
+        });
+
+        document.getElementById('settingsBackBtn')?.addEventListener('click', () => {
+            document.getElementById('settingsModal').style.display = 'none';
+        });
+
+        // Settings Controls
+        document.getElementById('volumeSlider')?.addEventListener('change', (e) => {
+            const volume = e.target.value;
+            sendRemoteCommand('volume', volume);
+            console.log(`Volume: ${volume}%`);
+        });
+
+        document.getElementById('brightnessSlider')?.addEventListener('change', (e) => {
+            const brightness = e.target.value;
+            sendRemoteCommand('brightness', brightness);
+            console.log(`Brightness: ${brightness}%`);
+        });
+
+        // Keyboard Controls
+        document.addEventListener('keydown', (e) => {
+            const keyMap = {
+                'Space': 'playPauseBtn',
+                'ArrowUp': 'upBtn',
+                'ArrowDown': 'downBtn',
+                'ArrowLeft': 'leftBtn',
+                'ArrowRight': 'rightBtn',
+                'Enter': 'selectBtn',
+                'Backspace': 'closeBtn'
+            };
+            if (keyMap[e.code]) {
+                e.preventDefault();
+                document.getElementById(keyMap[e.code]).click();
+            }
+        });
+
+        console.log('%cLUMIÈRE Remote Active', 'font-size: 14px; font-weight: bold; color: #ffffff;');
+    </script>
+</body>
+</html>

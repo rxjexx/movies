@@ -1,0 +1,520 @@
+/* ========================
+   RESPONSIVE ENHANCEMENTS
+   Device-Specific Optimizations
+   ======================== */
+
+/* ========================
+   MOBILE OPTIMIZATIONS (< 480px)
+   ======================== */
+@media (max-width: 479px) {
+    /* Navigation Optimization */
+    .navbar {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+    
+    .nav-menu {
+        font-size: 0.65rem;
+    }
+    
+    /* Hero Section Mobile */
+    .hero {
+        height: auto;
+        min-height: 300px;
+        margin-top: 60px;
+        display: flex;
+        align-items: flex-start;
+        padding-top: 2rem;
+    }
+    
+    .hero-title {
+        font-size: 1.5rem;
+        line-height: 1.2;
+    }
+    
+    .hero-description {
+        display: none;
+    }
+    
+    .hero-buttons {
+        margin-top: 1rem;
+    }
+    
+    /* Movie Grid - Single Column */
+    .movie-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        overflow-x: visible;
+        width: 100%;
+        padding: 0.75rem;
+    }
+    
+    .movie-card {
+        width: 100%;
+        flex-basis: auto;
+    }
+    
+    /* Search Input Mobile */
+    .search-box input {
+        max-width: 100%;
+    }
+    
+    /* Modal Mobile */
+    .modal-card {
+        width: 98%;
+        border-radius: 12px;
+    }
+    
+    .modal-content {
+        padding: 1rem;
+    }
+    
+    /* Touch-friendly buttons */
+    .btn {
+        min-height: 44px;
+        font-size: 0.875rem;
+    }
+    
+    .play-btn {
+        width: 48px;
+        height: 48px;
+    }
+    
+    /* Section Padding Mobile */
+    .section {
+        padding: 1.5rem 0.75rem;
+    }
+    
+    .section-title {
+        font-size: 1.4rem;
+        margin-bottom: 1.5rem;
+    }
+}
+
+/* ========================
+   SMALL PHONES (480px - 600px)
+   ======================== */
+@media (min-width: 480px) and (max-width: 599px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .movie-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        overflow-x: visible;
+        width: 100%;
+    }
+    
+    .movie-card {
+        width: 100%;
+    }
+    
+    .section-title {
+        font-size: 1.6rem;
+    }
+}
+
+/* ========================
+   LANDSCAPE PHONES (600px - 768px)
+   ======================== */
+@media (min-width: 600px) and (max-width: 767px) {
+    .hero {
+        height: 350px;
+    }
+    
+    .hero-title {
+        font-size: 2.2rem;
+    }
+    
+    .movie-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        overflow-x: visible;
+        width: 100%;
+    }
+    
+    .movie-card {
+        width: 100%;
+    }
+}
+
+/* ========================
+   TABLET OPTIMIZATIONS (768px - 1024px)
+   ======================== */
+@media (min-width: 768px) and (max-width: 1023px) {
+    /* Hero Section Tablet */
+    .hero {
+        height: 500px;
+    }
+    
+    /* Navigation Tablet */
+    .nav-container {
+        padding: 0 1rem;
+    }
+    
+    /* Movie Grid - 3 Columns */
+    .movie-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 1rem;
+        overflow-x: visible;
+        width: 100%;
+    }
+    
+    .movie-card {
+        width: 100%;
+    }
+    
+    /* Modal Tablet */
+    .modal-content {
+        flex-direction: row;
+    }
+    
+    .modal-poster {
+        flex: 0 0 250px;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+    }
+}
+
+/* ========================
+   DESKTOP OPTIMIZATIONS (1024px+)
+   ======================== */
+@media (min-width: 1024px) {
+    /* Hero Section Desktop */
+    .hero {
+        height: 600px;
+    }
+    
+    /* Movie Grid - 4-5 Columns */
+    .movie-grid {
+        display: flex;
+        overflow-x: auto;
+        gap: 1.5rem;
+    }
+    
+    .movie-card {
+        flex: 0 0 200px;
+    }
+    
+    /* Wide Screen Optimization */
+    .section-container {
+        padding: 0 2rem;
+    }
+}
+
+/* ========================
+   ULTRA-WIDE SCREENS (1536px+)
+   ======================== */
+@media (min-width: 1536px) {
+    .section-container {
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+    
+    .hero {
+        height: 700px;
+    }
+    
+    .movie-card {
+        flex: 0 0 220px;
+    }
+    
+    .section-title {
+        font-size: 3rem;
+    }
+}
+
+/* ========================
+   HIGH PIXEL DENSITY (Retina Displays)
+   ======================== */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    
+    .movie-image img {
+        image-rendering: -webkit-optimize-contrast;
+    }
+}
+
+/* ========================
+   TOUCH DEVICE OPTIMIZATIONS
+   ======================== */
+@media (hover: none) and (pointer: coarse) {
+    /* Larger touch targets */
+    .btn,
+    .play-btn,
+    .nav-link {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* Reduce hover effects on touch */
+    .movie-card:active {
+        transform: scale(0.98);
+    }
+    
+    /* Remove hover states */
+    .movie-card:hover .movie-overlay {
+        opacity: 0;
+    }
+    
+    .movie-card:active .movie-overlay {
+        opacity: 1;
+    }
+    
+    .play-btn:hover {
+        transform: none;
+    }
+    
+    .play-btn:active {
+        transform: scale(1.1);
+    }
+    
+    /* Disable text selection on buttons */
+    .btn,
+    .play-btn {
+        user-select: none;
+        -webkit-user-select: none;
+    }
+}
+
+/* ========================
+   KEYBOARD NAVIGATION (Non-Touch)
+   ======================== */
+@media (hover: hover) and (pointer: fine) {
+    .btn:focus-visible,
+    .nav-link:focus-visible,
+    .movie-card:focus-visible {
+        outline: 2px solid #D4AF37;
+        outline-offset: 2px;
+    }
+    
+    .movie-card:hover {
+        transform: translateY(-8px);
+    }
+}
+
+/* ========================
+   LANDSCAPE ORIENTATION OPTIMIZATION
+   ======================== */
+@media (orientation: landscape) {
+    .hero {
+        height: auto;
+        min-height: 350px;
+    }
+    
+    .navbar {
+        padding: 0.5rem 0;
+    }
+    
+    .section {
+        padding: 2rem 1rem;
+    }
+    
+    /* Stack layout in landscape if needed */
+    @media (orientation: landscape) and (max-height: 500px) {
+        .hero-description {
+            display: none;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+        }
+    }
+}
+
+/* ========================
+   PORTRAIT ORIENTATION OPTIMIZATION
+   ======================== */
+@media (orientation: portrait) {
+    .hero-content {
+        max-width: 100%;
+    }
+    
+    .movie-grid {
+        padding: 0 var(--space-md);
+    }
+}
+
+/* ========================
+   NOTCH SUPPORT (iPhone X+, Modern Phones)
+   ======================== */
+@supports (padding: max(0px)) {
+    body {
+        padding-left: max(0px, env(safe-area-inset-left));
+        padding-right: max(0px, env(safe-area-inset-right));
+    }
+    
+    .navbar {
+        padding-top: max(var(--space-md), env(safe-area-inset-top));
+        padding-bottom: max(var(--space-md), env(safe-area-inset-bottom));
+    }
+    
+    .modal-card {
+        max-height: 100vh;
+        max-height: 100dvh;
+    }
+}
+
+/* ========================
+   FLEXIBLE ASPECT RATIO HANDLING
+   ======================== */
+
+/* Ultra-wide (21:9) */
+@media (min-aspect-ratio: 21/9) {
+    .hero-content {
+        max-width: 45%;
+    }
+    
+    .hero-title {
+        font-size: 4rem;
+    }
+}
+
+/* Wide (16:9) */
+@media (aspect-ratio: 16/9) {
+    .hero {
+        height: 65vh;
+    }
+}
+
+/* Standard (4:3 to 3:2) */
+@media (aspect-ratio: 4/3) {
+    .hero {
+        height: 60vh;
+    }
+}
+
+/* Narrow/Tall (9:16 and below) */
+@media (max-aspect-ratio: 9/16) {
+    .hero {
+        height: 40vh;
+    }
+    
+    .movie-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ========================
+   PERFORMANCE OPTIMIZATIONS
+   Disabled scroll animations for smooth scrolling
+   ======================== */
+
+/* Disable animation classes for better performance */
+.scroll-fade-in,
+.scroll-scale-in,
+.scroll-slide-left,
+.scroll-slide-right,
+.scroll-section,
+.movie-card,
+.animate-on-scroll {
+    animation: none !important;
+    animation-play-state: running !important;
+    opacity: 1 !important;
+    transform: none !important;
+}
+
+.in-view,
+.out-view {
+    animation: none !important;
+}
+
+/* ========================
+   REDUCED MOTION (Accessibility)
+   ======================== */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .movie-card:hover {
+        transform: none;
+    }
+    
+    .play-btn:hover {
+        transform: none;
+    }
+}
+
+/* ========================
+   DARK MODE (Prefers Dark)
+   ======================== */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #0a0a0a;
+        color: #f5f5dc;
+    }
+    
+    .modal-card {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    }
+}
+
+/* ========================
+   LIGHT MODE (Prefers Light) - Fallback
+   ======================== */
+@media (prefers-color-scheme: light) {
+    body {
+        background-color: #f5f5f5;
+        color: #0a0a0a;
+    }
+    
+    .modal-overlay {
+        background: rgba(255, 255, 255, 0.9);
+    }
+}
+
+/* ========================
+   RESPONSIVE IMAGES
+   ======================== */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Responsive video embeds */
+iframe,
+video {
+    max-width: 100%;
+    height: auto;
+}
+
+/* ========================
+   PRINT STYLES
+   ======================== */
+@media print {
+    .navbar,
+    .footer,
+    .modal,
+    .search-box {
+        display: none !important;
+    }
+    
+    body {
+        background: white;
+        color: black;
+    }
+    
+    .section {
+        page-break-inside: avoid;
+    }
+    
+    .movie-card {
+        page-break-inside: avoid;
+    }
+}

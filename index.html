@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LUMIÈRE | Stream Movies & TV Shows</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="responsive.css">
+    <link rel="stylesheet" href="responsive-enhancements.css">
+    <script src="storage.js"></script>
+    <script src="init-popup.js"></script>
+    <style>
+        @keyframes animationIn {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+                filter: blur(8px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+                filter: blur(0px);
+            }
+        }
+
+        @keyframes fadeInUp {
+            0% {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeOutDown {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+        }
+
+        @keyframes fadeInScale {
+            0% {
+                opacity: 0;
+                transform: scale(0.95) translateY(30px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        @keyframes fadeOutScale {
+            0% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.95) translateY(30px);
+            }
+        }
+
+        @keyframes slideInLeft {
+            0% {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideOutLeft {
+            0% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+        }
+
+        @keyframes slideInRight {
+            0% {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideOutRight {
+            0% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+        }
+
+        @keyframes float1 {
+            0%, 100% { transform: translateY(0px) rotate(-4deg); }
+            50% { transform: translateY(-20px) rotate(-4deg); }
+        }
+
+        @keyframes float2 {
+            0%, 100% { transform: translateY(0px) rotate(3deg); }
+            50% { transform: translateY(-25px) rotate(3deg); }
+        }
+
+        @keyframes float3 {
+            0%, 100% { transform: translateY(0px) rotate(-2deg); }
+            50% { transform: translateY(-15px) rotate(-2deg); }
+        }
+
+        @keyframes float4 {
+            0%, 100% { transform: translateY(0px) rotate(2deg); }
+            50% { transform: translateY(-30px) rotate(2deg); }
+        }
+
+        @keyframes float5 {
+            0%, 100% { transform: translateY(0px) rotate(4deg); }
+            50% { transform: translateY(-18px) rotate(4deg); }
+        }
+
+        @keyframes float6 {
+            0%, 100% { transform: translateY(0px) rotate(-3deg); }
+            50% { transform: translateY(-22px) rotate(-3deg); }
+        }
+
+        .float-card-1 { animation: float1 6s ease-in-out infinite; }
+        .float-card-2 { animation: float2 7s ease-in-out infinite 0.2s; }
+        .float-card-3 { animation: float3 5.5s ease-in-out infinite 0.4s; }
+        .float-card-4 { animation: float4 8s ease-in-out infinite 0.6s; }
+        .float-card-5 { animation: float5 6.5s ease-in-out infinite 0.8s; }
+        .float-card-6 { animation: float6 7.5s ease-in-out infinite 1s; }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.15), inset 0 -1px 1px rgba(0, 0, 0, 0.3);
+            border-radius: 1.5rem;
+        }
+
+        .glass-highlight {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, 0.05) 100%);
+            border-radius: 1.5rem;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .movie-grid {
+            display: flex;
+            gap: 1.5rem;
+            overflow-x: auto;
+            padding-bottom: 1rem;
+            scroll-behavior: smooth;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .movie-grid::-webkit-scrollbar {
+            display: none;
+        }
+
+        .flex-wrap {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        /* Scroll animation container */
+        .scroll-section {
+            opacity: 0;
+            transform: translateY(40px);
+            animation: fadeInUp 0.8s ease-out forwards;
+            animation-play-state: paused;
+        }
+
+        .scroll-section.in-view {
+            animation-play-state: running;
+        }
+
+        .movie-image {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 2/3;
+            overflow: hidden;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #333 0%, #1a1a1a 100%);
+            margin-bottom: 1rem;
+        }
+
+        .movie-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease, filter 0.3s ease;
+        }
+
+        .movie-card:hover .movie-image img {
+            transform: scale(1.1);
+            filter: brightness(0.7);
+        }
+
+        .movie-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .movie-card:hover .movie-overlay {
+            opacity: 1;
+        }
+
+        .play-btn {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.08) 100%);
+            border: 1.5px solid rgba(255, 255, 255, 0.35);
+            color: #ffffff;
+            font-size: 1.75rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.2), inset 0 -1px 1px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .play-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, 0.05) 100%);
+            border-radius: 50%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .play-btn svg {
+            position: relative;
+            z-index: 2;
+            width: 28px;
+            height: 28px;
+            margin-left: 2px;
+        }
+
+        .play-btn:hover {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.12) 100%);
+            transform: scale(1.2) translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 16px 48px rgba(255, 255, 255, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.3), inset 0 -1px 1px rgba(0, 0, 0, 0.2);
+        }
+
+        .play-btn:active {
+            transform: scale(1.05) translateY(-2px);
+        }
+
+        .movie-label {
+            display: inline-block;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+            padding: 0.25rem 0.75rem;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .series-label {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .movie-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #ffffff;
+            line-height: 1.3;
+        }
+
+        .movie-meta {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            perspective: 1200px;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0);
+            backdrop-filter: blur(0px);
+            cursor: pointer;
+            animation: overlayFadeIn 0.4s ease-out forwards;
+        }
+
+        @keyframes overlayFadeIn {
+            from {
+                background: rgba(0, 0, 0, 0);
+                backdrop-filter: blur(0px);
+            }
+            to {
+                background: rgba(0, 0, 0, 0.7);
+                backdrop-filter: blur(12px);
+            }
+        }
+
+        .modal-card {
+            position: relative;
+            z-index: 10000;
+            background: linear-gradient(135deg, rgba(20, 20, 25, 0.4) 0%, rgba(15, 15, 20, 0.3) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 1000px;
+            max-height: 85vh;
+            overflow-y: auto;
+            display: flex;
+            animation: cardSlideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            transform-style: preserve-3d;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 60px rgba(255, 255, 255, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            pointer-events: auto;
+        }
+
+        @keyframes cardSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.85) translateY(-80px) rotateX(25deg);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0) rotateX(0deg);
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 2.5rem;
+            cursor: pointer;
+            z-index: 10001;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            transform: rotate(90deg) scale(1.1);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .modal-content {
+            display: grid;
+            grid-template-columns: 1fr 1.3fr;
+            gap: 3rem;
+            padding: 2.5rem;
+            width: 100%;
+            animation: contentFadeIn 0.8s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        @keyframes contentFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-poster {
+            flex: 0 0 auto;
+            position: relative;
+        }
+
+        .modal-poster img {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 2/3;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(255, 255, 255, 0.1);
+            object-fit: cover;
+            transition: all 0.4s ease;
+            animation: posterFloat 0.8s ease-out 0.3s both;
+        }
+
+        @keyframes posterFloat {
+            from {
+                opacity: 0;
+                transform: translateX(-40px) rotateY(-15deg) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) rotateY(0) scale(1);
+            }
+        }
+
+        .modal-poster img:hover {
+            transform: scale(1.02) translateZ(20px);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), 0 0 50px rgba(255, 255, 255, 0.15);
+        }
+
+        .modal-details {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            animation: detailsSlideIn 0.8s ease-out 0.35s both;
+        }
+
+        @keyframes detailsSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(40px) rotateY(15deg);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) rotateY(0);
+            }
+        }
+
+        .modal-title {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: #ffffff;
+            line-height: 1.2;
+            background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .modal-meta {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .modal-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .modal-rating {
+            font-size: clamp(1rem, 2.5vw, 1.3rem);
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 700;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal-overview {
+            color: rgba(255, 255, 255, 0.85);
+            line-height: 1.8;
+            font-size: clamp(0.875rem, 1.5vw, 1.05rem);
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            max-height: 150px;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .modal-overview::-webkit-scrollbar {
+            display: none;
+        }
+
+        .modal-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            padding: 1.25rem;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+        }
+
+        .info-item:hover {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(255, 255, 255, 0.15);
+        }
+
+        .info-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-bottom: 0.6rem;
+        }
+
+        .info-value {
+            color: #ffffff;
+            font-size: clamp(0.95rem, 1.5vw, 1.1rem);
+            font-weight: 600;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            animation: buttonsFadeIn 0.8s ease-out 0.5s both;
+        }
+
+        @keyframes buttonsFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-icon {
+            width: 18px;
+            height: 18px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
+            color: #ffffff;
+            border: 1.5px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 24px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.15) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 36px rgba(255, 255, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+            color: rgba(255, 255, 255, 0.9);
+            border: 1.5px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 24px rgba(255, 255, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-secondary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .btn-secondary:hover::before {
+            left: 100%;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
+            border-color: rgba(255, 255, 255, 0.35);
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 36px rgba(255, 255, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        @media (max-width: 1024px) {
+            .modal-card {
+                max-height: 90vh;
+                border-radius: 16px;
+            }
+
+            .modal-content {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+                padding: 2rem;
+            }
+
+            .modal-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .modal-card {
+                width: 95%;
+                max-height: 95vh;
+                border-radius: 16px;
+            }
+
+            .modal-content {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+                padding: 1.5rem;
+            }
+
+            .modal-poster {
+                order: 2;
+            }
+
+            .modal-details {
+                order: 1;
+            }
+
+            .modal-title {
+                font-size: 1.75rem;
+            }
+
+            .modal-buttons {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .btn {
+                width: 100%;
+                padding: 0.9rem 1.5rem;
+            }
+
+            .modal-info {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-overview {
+                max-height: 120px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .modal-card {
+                width: 98%;
+                margin: 1rem;
+            }
+
+            .modal-content {
+                padding: 1.25rem;
+                gap: 1.25rem;
+            }
+
+            .modal-title {
+                font-size: 1.5rem;
+            }
+
+            .modal-meta {
+                font-size: 0.85rem;
+                gap: 0.75rem;
+            }
+
+            .modal-meta span {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.75rem;
+            }
+
+            .btn {
+                padding: 0.8rem 1rem;
+                font-size: 0.85rem;
+            }
+        }
+
+        [animation:animationIn_0.8s_ease-out_0.1s_both] {
+            animation: animationIn 0.8s ease-out 0.1s both;
+        }
+
+        .animate-on-scroll { animation-play-state: paused !important; }
+        .animate-on-scroll.animate { animation-play-state: running !important; }
+
+        /* Scroll Animation Classes - DISABLED for smooth scrolling */
+        .scroll-fade-in { animation: none !important; opacity: 1 !important; }
+        .scroll-fade-in.in-view { animation: none !important; opacity: 1 !important; }
+        .scroll-fade-in.out-view { animation: none !important; opacity: 1 !important; }
+        .scroll-scale-in { animation: none !important; opacity: 1 !important; transform: scale(1) !important; }
+        .scroll-scale-in.in-view { animation: none !important; opacity: 1 !important; transform: scale(1) !important; }
+        .scroll-scale-in.out-view { animation: none !important; opacity: 1 !important; transform: scale(1) !important; }
+        .scroll-slide-left { animation: none !important; opacity: 1 !important; transform: none !important; }
+        .scroll-slide-left.in-view { animation: none !important; opacity: 1 !important; transform: none !important; }
+        .scroll-slide-left.out-view { animation: none !important; opacity: 1 !important; transform: none !important; }
+        .scroll-slide-right { animation: none !important; opacity: 1 !important; transform: none !important; }
+        .scroll-slide-right.in-view { animation: none !important; opacity: 1 !important; transform: none !important; }
+        .scroll-slide-right.out-view { animation: none !important; opacity: 1 !important; transform: none !important; }
+
+        /* Staggered animation for movie cards - DISABLED ON SCROLL */
+        .movie-card { animation: none !important; opacity: 1 !important; }
+        .movie-card.in-view { animation: none !important; opacity: 1 !important; }
+        .movie-card.out-view { animation: none !important; opacity: 1 !important; }
+            animation: fadeOutScale 0.5s ease-in forwards;
+            animation-play-state: running;
+        }
+
+        /* Stagger delays removed - no scroll animations */
+
+        /* Scroll animation container - DISABLED */
+        .scroll-section { animation: none !important; opacity: 1 !important; transform: none !important; }
+        .scroll-section.in-view { animation: none !important; opacity: 1 !important; transform: none !important; }
+        .scroll-section.out-view { animation: none !important; opacity: 1 !important; transform: none !important; }
+
+        @media (max-width: 768px) {
+            .modal-content {
+                flex-direction: column;
+                gap: 1.5rem;
+                padding: 1.5rem;
+            }
+
+            .modal-poster {
+                flex: 0 0 250px;
+            }
+
+            .modal-title {
+                font-size: 1.8rem;
+            }
+
+            .modal-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .movie-card {
+                width: 150px;
+            }
+        }
+    </style>
+    <script>
+        (function () {
+            const style = document.createElement("style");
+            style.textContent = `.animate-on-scroll { animation-play-state: paused !important; } .animate-on-scroll.animate { animation-play-state: running !important; }`;
+            document.head.appendChild(style);
+            const once = true;
+            if (!window.__inViewIO) {
+                window.__inViewIO = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add("animate");
+                            if (once) window.__inViewIO.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.2, rootMargin: "0px 0px -10% 0px" });
+            }
+            window.initInViewAnimations = function (selector = ".animate-on-scroll") {
+                document.querySelectorAll(selector).forEach((el) => {
+                    window.__inViewIO.observe(el);
+                });
+            };
+            document.addEventListener("DOMContentLoaded", () => {
+                initInViewAnimations();
+                lucide.createIcons();
+            });
+        })();
+    </script>
+</head>
+<body class="min-h-screen overflow-x-hidden selection:bg-white/10 text-white font-sans bg-[#09090b] relative" style="font-family: 'Inter', sans-serif; scrollbar-width: none; -ms-overflow-style: none;">
+    <style>
+        /* Hide scrollbars for all browsers */
+        ::-webkit-scrollbar { display: none; }
+        body { -ms-overflow-style: none; scrollbar-width: none; }
+        html { scrollbar-width: none; -ms-overflow-style: none; }
+    </style>
+
+<!-- Cinematic Perspective Background -->
+<div class="aura-background-component fixed top-0 w-full h-screen -z-10 brightness-75" data-alpha-mask="80" style="mask-image: linear-gradient(to bottom, transparent, black 0%, black 80%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 0%, black 80%, transparent)">
+    <div class="aura-background-component top-0 w-full -z-10 absolute h-full">
+        <div data-us-project="uFY4IYPs2LU8fWm96Im2" class="absolute w-full h-full left-0 top-0 -z-10"></div>
+        <script type="text/javascript">
+            !function(){if(!window.UnicornStudio){window.UnicornStudio={isInitialized:!1};var i=document.createElement("script");i.src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v1.4.29/dist/unicornStudio.umd.js",i.onload=function(){window.UnicornStudio.isInitialized||(UnicornStudio.init(),window.UnicornStudio.isInitialized=!0)},(document.head || document.body).appendChild(i)}}();
+        </script>
+    </div>
+</div>
+
+<!-- Background Glow Effects -->
+<div class="fixed inset-0 z-0 pointer-events-none overflow-hidden flex items-center justify-center">
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-px h-[60vh] bg-gradient-to-b from-zinc-400/30 via-zinc-500/5 to-transparent z-10"></div>
+</div>
+
+<!-- Navigation -->
+<header class="fixed flex md:px-12 z-50 pointer-events-auto pt-6 pr-6 pb-6 pl-6 top-0 right-0 left-0 items-center justify-between">
+    <a href="#" class="flex items-center gap-2.5 text-xl tracking-tight font-medium text-white hover:opacity-80 transition-opacity">
+        <iconify-icon icon="solar:clapperboard-play-linear" class="text-white w-5 h-5 flex items-center justify-center" style="stroke-width: 1.5;"></iconify-icon>
+        LUMIÈRE
+    </a>
+    
+    <div class="hidden md:flex items-center gap-10 text-base font-normal text-zinc-400">
+        <a href="movies.html" class="flex items-center gap-1.5 hover:text-zinc-200 transition-colors group">
+            Movies <iconify-icon icon="solar:alt-arrow-down-linear" class="w-4 h-4 flex items-center justify-center opacity-50 group-hover:opacity-100 transition-opacity" style="stroke-width: 1.5;"></iconify-icon>
+        </a>
+        <a href="tv.html" class="flex items-center gap-1.5 hover:text-zinc-200 transition-colors group">
+            TV <iconify-icon icon="solar:alt-arrow-down-linear" class="w-4 h-4 flex items-center justify-center opacity-50 group-hover:opacity-100 transition-opacity" style="stroke-width: 1.5;"></iconify-icon>
+        </a>
+        <button id="cloudRemoteBtn" class="flex items-center gap-1.5 hover:text-zinc-200 transition-colors group">
+            Cloud Remote <iconify-icon icon="solar:smartphone-linear" class="w-4 h-4 flex items-center justify-center opacity-50 group-hover:opacity-100 transition-opacity" style="stroke-width: 1.5;"></iconify-icon>
+        </button>
+    </div>
+    
+    <div class="hidden md:flex items-center gap-6">
+        <div class="flex items-center gap-2 bg-black/50 backdrop-blur-sm border border-zinc-700/50 rounded-full px-4 py-2">
+            <iconify-icon icon="solar:magnifer-linear" class="w-4 h-4 text-zinc-400" style="stroke-width: 1.5;"></iconify-icon>
+            <input type="text" id="searchInput" placeholder="Search..." class="bg-transparent border-none outline-none text-sm text-zinc-300 placeholder:text-zinc-500 w-32">
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<main class="relative z-20 container mx-auto px-6 md:px-12 flex flex-col justify-center pt-32 pb-10 md:pb-16 pointer-events-none">
+    
+    <!-- Hero Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 lg:gap-12 pointer-events-auto min-h-[70vh] gap-x-16 gap-y-16 items-center mb-20">
+        
+        <!-- Left Side -->
+        <div class="flex flex-col gap-8 lg:pr-8 text-left [animation:animationIn_0.8s_ease-out_0.1s_both] animate-on-scroll animate">
+            <h1 class="sm:text-6xl md:text-7xl leading-[1.1] text-5xl font-medium text-white/95 tracking-tight uppercase">
+                Stream <br>
+                Unlimited <br>
+                <span class="text-zinc-500">Entertainment</span>
+            </h1>
+            
+            <p class="text-lg text-zinc-400 font-normal leading-relaxed max-w-xl">
+                Discover thousands of movies and TV shows. Stream in HD quality with zero lag and no ads.
+            </p>
+
+            <div class="flex flex-wrap items-center gap-6 [animation:animationIn_0.8s_ease-out_0.3s_both] animate-on-scroll">
+                <div class="hidden md:flex items-center gap-2 text-zinc-500 font-medium text-base ml-2 animate-pulse">
+                    Explore Movies Below
+                    <iconify-icon icon="solar:arrow-right-linear" class="w-5 h-5 flex items-center justify-center" style="stroke-width: 1.5;"></iconify-icon>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Floating Animated Movies -->
+        <div class="hidden lg:block relative pointer-events-auto" style="height: 500px; perspective: 1000px;">
+            <div id="floatingCardsContainer" style="position: relative; width: 100%; height: 100%; pointer-events: auto;">
+                <!-- Floating cards will be populated here with animations -->
+            </div>
+        </div>
+    
+    </div>
+
+    <!-- Movie Detail Modal -->
+    <div id="movieModal" class="modal">
+        <div class="modal-overlay" id="modalOverlay"></div>
+        <div class="modal-card">
+            <button class="modal-close">&times;</button>
+            <div class="modal-content">
+                <div class="modal-poster">
+                    <img id="modalPoster" src="" alt="Movie Poster">
+                </div>
+                <div class="modal-details">
+                    <h1 id="modalTitle" class="modal-title"></h1>
+                    <p id="modalYear" class="modal-meta"></p>
+                    <p id="modalRating" class="modal-rating"></p>
+                    <p id="modalOverview" class="modal-overview"></p>
+                    <div class="modal-info">
+                        <div class="info-item">
+                            <span class="info-label">Genre</span>
+                            <span id="modalGenre" class="info-value"></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Status</span>
+                            <span id="modalStatus" class="info-value"></span>
+                        </div>
+                    </div>
+                    <div class="modal-buttons">
+                        <button class="btn btn-primary" id="watchBtn">
+                            <svg viewBox="0 0 24 24" fill="currentColor" class="btn-icon">
+                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                            </svg>
+                            Watch Now
+                        </button>
+                        <button class="btn btn-secondary" id="closeBtn">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ad Blocker Recommendation Popup -->
+    <div id="adBlockerModal" class="modal" style="z-index: 99999;">
+        <div class="modal-overlay" id="adBlockerOverlay" style="background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);"></div>
+        <div class="modal-card" style="max-width: 600px; animation: cardSlideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;">
+            <button class="modal-close" id="closeAdBlocker">&times;</button>
+            <div class="modal-content" style="display: flex; flex-direction: column; gap: 0;">
+                <div style="padding: 2.5rem; padding-bottom: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                        <iconify-icon icon="solar:shield-linear" style="width: 40px; height: 40px; color: rgba(255, 255, 255, 0.9);"></iconify-icon>
+                        <h2 style="font-size: 1.75rem; font-weight: 700; color: #ffffff; margin: 0;">Protect Your Experience</h2>
+                    </div>
+                    <p style="color: rgba(255, 255, 255, 0.8); font-size: 1rem; line-height: 1.6; margin: 0;">We recommend using an ad blocker for a cleaner, faster streaming experience. Choose one for your device:</p>
+                </div>
+                
+                <div style="padding: 0 2.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <!-- Windows/Mac -->
+                    <a href="https://chrome.google.com/webstore/detail/ublock-origin/cjpalhdlnbpafiamejdnhcphjbkeiagm" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; text-decoration: none; transition: all 0.3s ease; cursor: pointer;">
+                        <iconify-icon icon="mdi:windows" style="width: 32px; height: 32px; color: rgba(59, 130, 246, 1);"></iconify-icon>
+                        <div style="flex: 1; text-align: left;">
+                            <div style="color: #ffffff; font-weight: 600; font-size: 0.95rem;">uBlock Origin</div>
+                            <div style="color: rgba(255, 255, 255, 0.6); font-size: 0.85rem;">Windows/Mac</div>
+                        </div>
+                        <iconify-icon icon="solar:alt-arrow-right-linear" style="width: 18px; height: 18px; color: rgba(255, 255, 255, 0.4);"></iconify-icon>
+                    </a>
+
+                    <!-- iPhone -->
+                    <a href="https://apps.apple.com/app/1-blocker-ad-blocker-privacy/id1016366315" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; text-decoration: none; transition: all 0.3s ease; cursor: pointer;">
+                        <iconify-icon icon="mdi:apple" style="width: 32px; height: 32px; color: rgba(255, 255, 255, 0.8);"></iconify-icon>
+                        <div style="flex: 1; text-align: left;">
+                            <div style="color: #ffffff; font-weight: 600; font-size: 0.95rem;">1Blocker</div>
+                            <div style="color: rgba(255, 255, 255, 0.6); font-size: 0.85rem;">iPhone</div>
+                        </div>
+                        <iconify-icon icon="solar:alt-arrow-right-linear" style="width: 18px; height: 18px; color: rgba(255, 255, 255, 0.4);"></iconify-icon>
+                    </a>
+
+                    <!-- Android -->
+                    <a href="https://play.google.com/store/apps/details?id=org.adblockplus.browser" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; text-decoration: none; transition: all 0.3s ease; cursor: pointer;">
+                        <iconify-icon icon="mdi:android" style="width: 32px; height: 32px; color: rgba(34, 197, 94, 1);"></iconify-icon>
+                        <div style="flex: 1; text-align: left;">
+                            <div style="color: #ffffff; font-weight: 600; font-size: 0.95rem;">Adblock Plus</div>
+                            <div style="color: rgba(255, 255, 255, 0.6); font-size: 0.85rem;">Android</div>
+                        </div>
+                        <iconify-icon icon="solar:alt-arrow-right-linear" style="width: 18px; height: 18px; color: rgba(255, 255, 255, 0.4);"></iconify-icon>
+                    </a>
+
+                    <!-- Mac -->
+                    <a href="https://apps.apple.com/app/adguard-adblock-privacy/id1440147259" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; text-decoration: none; transition: all 0.3s ease; cursor: pointer;">
+                        <iconify-icon icon="mdi:apple" style="width: 32px; height: 32px; color: rgba(255, 255, 255, 0.8);"></iconify-icon>
+                        <div style="flex: 1; text-align: left;">
+                            <div style="color: #ffffff; font-weight: 600; font-size: 0.95rem;">AdGuard</div>
+                            <div style="color: rgba(255, 255, 255, 0.6); font-size: 0.85rem;">Mac</div>
+                        </div>
+                        <iconify-icon icon="solar:alt-arrow-right-linear" style="width: 18px; height: 18px; color: rgba(255, 255, 255, 0.4);"></iconify-icon>
+                    </a>
+                </div>
+
+                <div style="padding: 1rem 2.5rem 2.5rem 2.5rem; display: flex; gap: 1rem;">
+                    <button id="dismissAdBlocker" style="flex: 1; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%); color: #ffffff; border: 1.5px solid rgba(255, 255, 255, 0.3); border-radius: 0.5rem; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 0.5px;">Maybe Later</button>
+                    <button id="confirmAdBlocker" style="flex: 1; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.15) 100%); color: #ffffff; border: 1.5px solid rgba(255, 255, 255, 0.5); border-radius: 0.5rem; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 8px 24px rgba(255, 255, 255, 0.1);">Got It</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popular Movies Section -->
+    <section id="movies" class="relative z-20 mb-20 pointer-events-auto scroll-section">
+        <div class="mb-8 scroll-slide-left">
+            <h2 class="text-3xl md:text-4xl font-medium tracking-tight text-white">
+                Popular Movies
+            </h2>
+            <p class="text-zinc-400 mt-2">Top rated movies everyone is watching</p>
+        </div>
+        <div class="movie-grid"></div>
+    </section>
+
+    <!-- Popular TV Section -->
+    <section id="tv" class="relative z-20 pointer-events-auto scroll-section">
+        <div class="mb-8 scroll-slide-left">
+            <h2 class="text-3xl md:text-4xl font-medium tracking-tight text-white">
+                Popular TV
+            </h2>
+            <p class="text-zinc-400 mt-2">Binge-worthy TV shows everyone loves</p>
+        </div>
+        <div class="movie-grid"></div>
+    </section>
+
+    <!-- Cloud Remote Modal -->
+    <div id="cloudRemoteModal" class="modal">
+        <div class="modal-overlay" id="cloudRemoteOverlay"></div>
+        <div class="modal-card" style="max-width: 600px;">
+            <button class="modal-close" id="closeCloudRemote">&times;</button>
+            <div class="modal-content" style="flex-direction: column; gap: 2rem; padding: 3rem;">
+                <div style="text-align: center;">
+                    <h2 class="modal-title" style="font-size: 2rem; margin-bottom: 0.5rem;">Cloud Remote</h2>
+                    <p style="color: rgba(255, 255, 255, 0.6); font-size: 0.95rem;">Control your streaming anywhere, anytime</p>
+                </div>
+                
+                <!-- QR Code Container -->
+                <div style="display: flex; justify-content: center; padding: 2rem; background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(20px);">
+                    <div id="qrcode" style="background: white; padding: 1rem; border-radius: 12px;"></div>
+                </div>
+
+                <!-- Link Section -->
+                <div style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(20px); padding: 1.5rem; display: flex; align-items: center; gap: 1rem;">
+                    <div style="flex: 1;">
+                        <p style="font-size: 0.75rem; color: rgba(255, 255, 255, 0.6); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; font-weight: 700;">Remote URL</p>
+                        <p id="remoteLink" style="color: rgba(255, 255, 255, 0.9); font-size: 0.9rem; word-break: break-all; font-family: monospace;">Loading...</p>
+                    </div>
+                    <button id="copyRemoteLinkBtn" class="btn btn-primary" style="flex-shrink: 0; padding: 0.75rem 1rem;">
+                        <iconify-icon icon="solar:copy-linear" style="width: 18px; height: 18px;"></iconify-icon>
+                    </button>
+                </div>
+
+                <!-- Info Text -->
+                <div style="text-align: center; padding: 1rem; background: rgba(255, 255, 255, 0.05); border-radius: 12px;">
+                    <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; line-height: 1.6;">
+                        Scan the QR code or click the link on any device to open the remote control interface. Control playback, volume, and more from your phone or tablet.
+                    </p>
+                </div>
+
+                <button class="btn btn-secondary" id="closeCloudRemoteBtn" style="width: 100%;">Close</button>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="relative z-20 mt-20 border-t border-zinc-800/50 bg-black/50 backdrop-blur-sm">
+    <div class="container mx-auto px-6 md:px-12 py-8 text-center text-sm text-zinc-500">
+        <p>Made by Ethan • LUMIÈRE © 2024</p>
+    </div>
+</footer>
+
+<script src="script.js"></script>
+
+</body>
+</html>

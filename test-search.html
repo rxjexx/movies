@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Search</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+        }
+        input {
+            padding: 10px;
+            font-size: 16px;
+            width: 300px;
+            background: #1a1a1a;
+            color: white;
+            border: 1px solid #333;
+        }
+        #results {
+            margin-top: 2rem;
+            border: 1px solid #333;
+            padding: 1rem;
+            min-height: 100px;
+        }
+        .result-item {
+            padding: 1rem;
+            border-bottom: 1px solid #333;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>LUMIÈRE Search Test</h1>
+    <p>API Base URL: <span id="apiUrl"></span></p>
+    <input type="text" id="searchInput" placeholder="Search movies or shows...">
+    <button onclick="testSearch()">Test Search</button>
+    <div id="results">Results will appear here</div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5000/api';
+        document.getElementById('apiUrl').textContent = API_BASE_URL;
+
+        async function testSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) {
+                alert('Please enter a search query');
+                return;
+            }
+
+            document.getElementById('results').innerHTML = '<p>Searching...</p>';
+            
+            try {
+                const url = `${API_BASE_URL}/search?q=${encodeURIComponent(query)}`;
+                console.log('Testing URL:', url);
+                
+                const response = await fetch(url);
+                console.log('Response:', response);
+                
+                const data = await response.json();
+                console.log('Data:', data);
+                
+                if (data.success && data.results) {
+                    const html = data.results.slice(0, 10).map(r => `
+                        <div class="result-item">
+                            <strong>${r.title || r.name}</strong><br>
+                            Type: ${r.media_type}<br>
+                            Year: ${r.release_date || r.first_air_date || 'N/A'}<br>
+                            ID: ${r.id}
+                        </div>
+                    `).join('');
+                    
+                    document.getElementById('results').innerHTML = `<h3>Found ${data.results.length} results:</h3>${html}`;
+                } else {
+                    document.getElementById('results').innerHTML = '<p style="color: red;">Error: ' + (data.error || 'Unknown error') + '</p>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('results').innerHTML = '<p style="color: red;">Error: ' + error.message + '</p>';
+            }
+        }
+
+        // Test auto-search
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') testSearch();
+        });
+    </script>
+</body>
+</html>

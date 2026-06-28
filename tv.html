@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LUMIÈRE | Stream Movies & TV Shows</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="responsive.css">
+    <link rel="stylesheet" href="responsive-enhancements.css">
+    <style>
+        @keyframes animationIn {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+                filter: blur(8px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+                filter: blur(0px);
+            }
+        }
+
+        @keyframes fadeInUp {
+            0% {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeOutDown {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+        }
+
+        @keyframes fadeInScale {
+            0% {
+                opacity: 0;
+                transform: scale(0.95) translateY(30px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        @keyframes fadeOutScale {
+            0% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.95) translateY(30px);
+            }
+        }
+
+        @keyframes slideInLeft {
+            0% {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideOutLeft {
+            0% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+        }
+
+        @keyframes slideInRight {
+            0% {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideOutRight {
+            0% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+        }
+
+        @keyframes float1 {
+            0%, 100% { transform: translateY(0px) rotate(-4deg); }
+            50% { transform: translateY(-20px) rotate(-4deg); }
+        }
+
+        @keyframes float2 {
+            0%, 100% { transform: translateY(0px) rotate(3deg); }
+            50% { transform: translateY(-25px) rotate(3deg); }
+        }
+
+        @keyframes float3 {
+            0%, 100% { transform: translateY(0px) rotate(-2deg); }
+            50% { transform: translateY(-15px) rotate(-2deg); }
+        }
+
+        @keyframes float4 {
+            0%, 100% { transform: translateY(0px) rotate(2deg); }
+            50% { transform: translateY(-30px) rotate(2deg); }
+        }
+
+        @keyframes float5 {
+            0%, 100% { transform: translateY(0px) rotate(4deg); }
+            50% { transform: translateY(-18px) rotate(4deg); }
+        }
+
+        @keyframes float6 {
+            0%, 100% { transform: translateY(0px) rotate(-3deg); }
+            50% { transform: translateY(-22px) rotate(-3deg); }
+        }
+
+        .float-card-1 { animation: float1 6s ease-in-out infinite; }
+        .float-card-2 { animation: float2 7s ease-in-out infinite 0.2s; }
+        .float-card-3 { animation: float3 5.5s ease-in-out infinite 0.4s; }
+        .float-card-4 { animation: float4 8s ease-in-out infinite 0.6s; }
+        .float-card-5 { animation: float5 6.5s ease-in-out infinite 0.8s; }
+        .float-card-6 { animation: float6 7.5s ease-in-out infinite 1s; }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.15), inset 0 -1px 1px rgba(0, 0, 0, 0.3);
+            border-radius: 1.5rem;
+        }
+
+        .glass-highlight {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, 0.05) 100%);
+            border-radius: 1.5rem;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .movie-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            overflow-x: auto;
+            padding-bottom: 1rem;
+            scroll-behavior: smooth;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .movie-grid::-webkit-scrollbar {
+            display: none;
+        }
+
+        .flex-wrap {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        /* Scroll animation container */
+        .scroll-section {
+            opacity: 0;
+            transform: translateY(40px);
+            animation: fadeInUp 0.8s ease-out forwards;
+            animation-play-state: paused;
+        }
+
+        .scroll-section.in-view {
+            animation-play-state: running;
+        }
+
+        .movie-image {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 2/3;
+            overflow: hidden;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #333 0%, #1a1a1a 100%);
+            margin-bottom: 1rem;
+        }
+
+        .movie-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease, filter 0.3s ease;
+        }
+
+        .movie-card:hover .movie-image img {
+            transform: scale(1.1);
+            filter: brightness(0.7);
+        }
+
+        .movie-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .movie-card:hover .movie-overlay {
+            opacity: 1;
+        }
+
+        .play-btn {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.08) 100%);
+            border: 1.5px solid rgba(255, 255, 255, 0.35);
+            color: #ffffff;
+            font-size: 1.75rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.2), inset 0 -1px 1px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .play-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, 0.05) 100%);
+            border-radius: 50%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .play-btn svg {
+            position: relative;
+            z-index: 2;
+            width: 28px;
+            height: 28px;
+            margin-left: 2px;
+        }
+
+        .play-btn:hover {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.12) 100%);
+            transform: scale(1.2) translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 16px 48px rgba(255, 255, 255, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.3), inset 0 -1px 1px rgba(0, 0, 0, 0.2);
+        }
+
+        .play-btn:active {
+            transform: scale(1.05) translateY(-2px);
+        }
+
+        .movie-label {
+            display: inline-block;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+            padding: 0.25rem 0.75rem;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .series-label {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .movie-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #ffffff;
+            line-height: 1.3;
+        }
+
+        .movie-meta {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            perspective: 1200px;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0);
+            backdrop-filter: blur(0px);
+            cursor: pointer;
+            animation: overlayFadeIn 0.4s ease-out forwards;
+        }
+
+        @keyframes overlayFadeIn {
+            from {
+                background: rgba(0, 0, 0, 0);
+                backdrop-filter: blur(0px);
+            }
+            to {
+                background: rgba(0, 0, 0, 0.7);
+                backdrop-filter: blur(12px);
+            }
+        }
+
+        .modal-card {
+            position: relative;
+            z-index: 10000;
+            background: linear-gradient(135deg, rgba(20, 20, 25, 0.4) 0%, rgba(15, 15, 20, 0.3) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 1000px;
+            max-height: 85vh;
+            overflow-y: auto;
+            display: flex;
+            animation: cardSlideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            transform-style: preserve-3d;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 60px rgba(255, 255, 255, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            pointer-events: auto;
+        }
+
+        @keyframes cardSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.85) translateY(-80px) rotateX(25deg);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0) rotateX(0deg);
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 2.5rem;
+            cursor: pointer;
+            z-index: 10001;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            transform: rotate(90deg) scale(1.1);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .modal-content {
+            display: grid;
+            grid-template-columns: 1fr 1.3fr;
+            gap: 3rem;
+            padding: 2.5rem;
+            width: 100%;
+            animation: contentFadeIn 0.8s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        @keyframes contentFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-poster {
+            flex: 0 0 auto;
+            position: relative;
+        }
+
+        .modal-poster img {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 2/3;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(255, 255, 255, 0.1);
+            object-fit: cover;
+            transition: all 0.4s ease;
+            animation: posterFloat 0.8s ease-out 0.3s both;
+        }
+
+        @keyframes posterFloat {
+            from {
+                opacity: 0;
+                transform: translateX(-40px) rotateY(-15deg) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) rotateY(0) scale(1);
+            }
+        }
+
+        .modal-poster img:hover {
+            transform: scale(1.02) translateZ(20px);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), 0 0 50px rgba(255, 255, 255, 0.15);
+        }
+
+        .modal-details {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            animation: detailsSlideIn 0.8s ease-out 0.35s both;
+        }
+
+        @keyframes detailsSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(40px) rotateY(15deg);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) rotateY(0);
+            }
+        }
+
+        .modal-title {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: #ffffff;
+            line-height: 1.2;
+            background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .modal-meta {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .modal-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .modal-rating {
+            font-size: clamp(1rem, 2.5vw, 1.3rem);
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 700;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal-overview {
+            color: rgba(255, 255, 255, 0.85);
+            line-height: 1.8;
+            font-size: clamp(0.875rem, 1.5vw, 1.05rem);
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            max-height: 150px;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .modal-overview::-webkit-scrollbar {
+            display: none;
+        }
+
+        .modal-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            padding: 1.25rem;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+        }
+
+        .info-item:hover {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(255, 255, 255, 0.15);
+        }
+
+        .info-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-bottom: 0.6rem;
+        }
+
+        .info-value {
+            color: #ffffff;
+            font-size: clamp(0.95rem, 1.5vw, 1.1rem);
+            font-weight: 600;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            animation: buttonsFadeIn 0.8s ease-out 0.5s both;
+        }
+
+        @keyframes buttonsFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-icon {
+            width: 18px;
+            height: 18px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
+            color: #ffffff;
+            border: 1.5px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 24px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.15) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 36px rgba(255, 255, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+            color: rgba(255, 255, 255, 0.9);
+            border: 1.5px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 24px rgba(255, 255, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-secondary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .btn-secondary:hover::before {
+            left: 100%;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
+            border-color: rgba(255, 255, 255, 0.35);
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 36px rgba(255, 255, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        @media (max-width: 1024px) {
+            .modal-card {
+                max-height: 90vh;
+                border-radius: 16px;
+            }
+
+            .modal-content {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+                padding: 2rem;
+            }
+
+            .modal-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .modal-card {
+                width: 95%;
+                max-height: 95vh;
+                border-radius: 16px;
+            }
+
+            .modal-content {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+                padding: 1.5rem;
+            }
+
+            .modal-poster {
+                order: 2;
+            }
+
+            .modal-details {
+                order: 1;
+            }
+
+            .modal-title {
+                font-size: 1.75rem;
+            }
+
+            .modal-buttons {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .btn {
+                width: 100%;
+                padding: 0.9rem 1.5rem;
+            }
+
+            .modal-info {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-overview {
+                max-height: 120px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .modal-card {
+                width: 98%;
+                margin: 1rem;
+            }
+
+            .modal-content {
+                padding: 1.25rem;
+                gap: 1.25rem;
+            }
+
+            .modal-title {
+                font-size: 1.5rem;
+            }
+
+            .modal-meta {
+                font-size: 0.85rem;
+                gap: 0.75rem;
+            }
+
+            .modal-meta span {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.75rem;
+            }
+
+            .btn {
+                padding: 0.8rem 1rem;
+                font-size: 0.85rem;
+            }
+        }
+
+        [animation:animationIn_0.8s_ease-out_0.1s_both] {
+            animation: animationIn 0.8s ease-out 0.1s both;
+        }
+
+        .animate-on-scroll { animation-play-state: paused !important; }
+        .animate-on-scroll.animate { animation-play-state: running !important; }
+
+        /* Scroll Animation Classes - DISABLED */
+        .scroll-fade-in {
+            animation: none !important;
+            opacity: 1 !important;
+        }
+
+        .scroll-fade-in.in-view {
+            animation: none !important;
+            opacity: 1 !important;
+        }
+
+        .scroll-fade-in.out-view {
+            animation: none !important;
+            opacity: 1 !important;
+        }
+
+        .scroll-scale-in {
+            animation: none !important;
+            opacity: 1 !important;
+        }
+
+        .scroll-scale-in.in-view {
+            animation: none !important;
+            opacity: 1 !important;
+        }
+
+        .scroll-scale-in.out-view {
+            animation: none !important;
+            opacity: 1 !important;
+        }
+
+        .scroll-slide-left {
+            animation: none !important;
+            opacity: 1 !important;
+        }
+
+        .scroll-slide-left.in-view {
+            animation: none !important;
+            opacity: 1 !important;
+        }
+
+        .scroll-slide-left.out-view {
+            animation: none !important;
+            opacity: 1 !important;
+        }
+
+        .scroll-slide-right {
+            animation: none !important;
+            opacity: 1 !important;
+        }
+
+        .scroll-slide-right.in-view {
+            animation: none !important;
+            opacity: 1 !important;
+        }
+
+        .scroll-slide-right.out-view {
+            animation: none !important;
+            opacity: 1 !important;
+        }
+
+        /* Staggered animation for movie cards */
+        .movie-card {
+            opacity: 0;
+            animation: fadeInScale 0.5s ease-out forwards;
+            animation-play-state: paused;
+            transition: none;
+        }
+
+        .movie-card.in-view {
+            animation: fadeInScale 0.5s ease-out forwards;
+            animation-play-state: running;
+        }
+
+        .movie-card.out-view {
+            animation: fadeOutScale 0.5s ease-in forwards;
+            animation-play-state: running;
+        }
+
+        /* Stagger each card */
+        .movie-card:nth-child(1) { animation-delay: 0s; }
+        .movie-card:nth-child(2) { animation-delay: 0.1s; }
+        .movie-card:nth-child(3) { animation-delay: 0.2s; }
+        .movie-card:nth-child(4) { animation-delay: 0.3s; }
+        .movie-card:nth-child(5) { animation-delay: 0.4s; }
+        .movie-card:nth-child(6) { animation-delay: 0.5s; }
+        .movie-card:nth-child(n+7) { animation-delay: 0.6s; }
+
+        /* Scroll animation container - DISABLED */
+        .scroll-section {
+            animation: none !important;
+            opacity: 1 !important;
+            transform: none !important;
+        }
+
+        .scroll-section.in-view {
+            animation: none !important;
+            opacity: 1 !important;
+            transform: none !important;
+        }
+
+        .scroll-section.out-view {
+            animation: none !important;
+            opacity: 1 !important;
+            transform: none !important;
+        }
+
+        @media (max-width: 768px) {
+            .modal-content {
+                flex-direction: column;
+                gap: 1.5rem;
+                padding: 1.5rem;
+            }
+
+            .modal-poster {
+                flex: 0 0 250px;
+            }
+
+            .modal-title {
+                font-size: 1.8rem;
+            }
+
+            .modal-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .movie-card {
+                width: 150px;
+            }
+        }
+    </style>
+    <script>
+        (function () {
+            const style = document.createElement("style");
+            style.textContent = `.animate-on-scroll { animation-play-state: paused !important; } .animate-on-scroll.animate { animation-play-state: running !important; }`;
+            document.head.appendChild(style);
+            const once = true;
+            if (!window.__inViewIO) {
+                window.__inViewIO = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add("animate");
+                            if (once) window.__inViewIO.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.2, rootMargin: "0px 0px -10% 0px" });
+            }
+            window.initInViewAnimations = function (selector = ".animate-on-scroll") {
+                document.querySelectorAll(selector).forEach((el) => {
+                    window.__inViewIO.observe(el);
+                });
+            };
+            document.addEventListener("DOMContentLoaded", () => {
+                initInViewAnimations();
+                lucide.createIcons();
+            });
+        })();
+    </script>
+</head>
+<body class="min-h-screen overflow-x-hidden selection:bg-white/10 text-white font-sans bg-[#09090b] relative" style="font-family: 'Inter', sans-serif; scrollbar-width: none; -ms-overflow-style: none;">
+    <style>
+        /* Hide scrollbars for all browsers */
+        ::-webkit-scrollbar { display: none; }
+        body { -ms-overflow-style: none; scrollbar-width: none; }
+        html { scrollbar-width: none; -ms-overflow-style: none; }
+    </style>
+
+<!-- Cinematic Perspective Background -->
+<div class="aura-background-component fixed top-0 w-full h-screen -z-10 brightness-75" data-alpha-mask="80" style="mask-image: linear-gradient(to bottom, transparent, black 0%, black 80%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 0%, black 80%, transparent)">
+    <div class="aura-background-component top-0 w-full -z-10 absolute h-full">
+        <div data-us-project="uFY4IYPs2LU8fWm96Im2" class="absolute w-full h-full left-0 top-0 -z-10"></div>
+        <script type="text/javascript">
+            !function(){if(!window.UnicornStudio){window.UnicornStudio={isInitialized:!1};var i=document.createElement("script");i.src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v1.4.29/dist/unicornStudio.umd.js",i.onload=function(){window.UnicornStudio.isInitialized||(UnicornStudio.init(),window.UnicornStudio.isInitialized=!0)},(document.head || document.body).appendChild(i)}}();
+        </script>
+    </div>
+</div>
+
+<!-- Background Glow Effects -->
+<div class="fixed inset-0 z-0 pointer-events-none overflow-hidden flex items-center justify-center">
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-px h-[60vh] bg-gradient-to-b from-zinc-400/30 via-zinc-500/5 to-transparent z-10"></div>
+</div>
+
+<!-- Navigation -->
+<header class="fixed flex md:px-12 z-50 pointer-events-auto pt-6 pr-6 pb-6 pl-6 top-0 right-0 left-0 items-center justify-between">
+    <a href="index.html" class="flex items-center gap-2.5 text-xl tracking-tight font-medium text-white hover:opacity-80 transition-opacity">
+        <iconify-icon icon="solar:clapperboard-play-linear" class="text-white w-5 h-5 flex items-center justify-center" style="stroke-width: 1.5;"></iconify-icon>
+        LUMIÈRE
+    </a>
+    
+    <div class="hidden md:flex items-center gap-10 text-base font-normal text-zinc-400">
+        <a href="movies.html" class="flex items-center gap-1.5 hover:text-zinc-200 transition-colors group">
+            Movies <iconify-icon icon="solar:alt-arrow-down-linear" class="w-4 h-4 flex items-center justify-center opacity-50 group-hover:opacity-100 transition-opacity" style="stroke-width: 1.5;"></iconify-icon>
+        </a>
+        <a href="tv.html" class="flex items-center gap-1.5 text-white transition-colors group">
+            TV <iconify-icon icon="solar:alt-arrow-down-linear" class="w-4 h-4 flex items-center justify-center opacity-50 group-hover:opacity-100 transition-opacity" style="stroke-width: 1.5;"></iconify-icon>
+        </a>
+    </div>
+    
+    <div class="hidden md:flex items-center gap-6">
+        <div class="flex items-center gap-2 bg-black/50 backdrop-blur-sm border border-zinc-700/50 rounded-full px-4 py-2">
+            <iconify-icon icon="solar:magnifer-linear" class="w-4 h-4 text-zinc-400" style="stroke-width: 1.5;"></iconify-icon>
+            <input type="text" id="searchInput" placeholder="Search..." class="bg-transparent border-none outline-none text-sm text-zinc-300 placeholder:text-zinc-500 w-32">
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<main class="relative z-20 container mx-auto px-6 md:px-12 flex flex-col justify-center pt-32 pb-10 md:pb-16 pointer-events-none">
+    
+    
+        </div>
+
+    <!-- Right Side: Floating Image Cluster -->
+    <!-- Floating cards section removed for cleaner interface -->
+    <div style="display: none;">
+        <!-- Floating image cluster removed -->
+    </div>
+    </div>
+
+    <!-- Movie Detail Modal -->
+    <div id="movieModal" class="modal">
+        <div class="modal-overlay" id="modalOverlay"></div>
+        <div class="modal-card">
+            <button class="modal-close">&times;</button>
+            <div class="modal-content">
+                <div class="modal-poster">
+                    <img id="modalPoster" src="" alt="Movie Poster">
+                </div>
+                <div class="modal-details">
+                    <h1 id="modalTitle" class="modal-title"></h1>
+                    <p id="modalYear" class="modal-meta"></p>
+                    <p id="modalRating" class="modal-rating"></p>
+                    <p id="modalOverview" class="modal-overview"></p>
+                    <div class="modal-info">
+                        <div class="info-item">
+                            <span class="info-label">Genre</span>
+                            <span id="modalGenre" class="info-value"></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Status</span>
+                            <span id="modalStatus" class="info-value"></span>
+                        </div>
+                    </div>
+                    <div class="modal-buttons">
+                        <button class="btn btn-primary" id="watchBtn">
+                            <svg viewBox="0 0 24 24" fill="currentColor" class="btn-icon">
+                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                            </svg>
+                            Watch Now
+                        </button>
+                        <button class="btn btn-secondary" id="closeBtn">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section id="tv" class="relative z-20 mb-20 pointer-events-auto"><div class="mb-8"><h2 class="text-3xl md:text-4xl font-medium tracking-tight text-white">All TV Shows</h2><p class="text-zinc-400 mt-2">Browse our entire collection of TV shows</p></div><div class="movie-grid" id="tvGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem; padding-bottom: 0;"></div></section>
+</main>
+
+<!-- Footer -->
+<footer class="relative z-20 mt-20 border-t border-zinc-800/50 bg-black/50 backdrop-blur-sm">
+    <div class="container mx-auto px-6 md:px-12 py-8 text-center text-sm text-zinc-500">
+        <p>Made by Ethan • LUMIÈRE © 2024</p>
+    </div>
+</footer>
+
+<script>
+    const API_BASE_URL = 'http://localhost:5000/api';
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadAllShows();
+        initializeSearch();
+        initializeModal();
+        initializeInfiniteScroll();
+    });
+
+    let currentPage = 1;
+    let isLoading = false;
+
+    async function loadAllShows() {
+        const data = await fetchAPI('/shows/popular?page=1');
+        if (data && data.success) {
+            displayShows(data.data.results);
+            currentPage = 1;
+        }
+    }
+
+    function initializeInfiniteScroll() {
+        window.addEventListener('scroll', () => {
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500 && !isLoading) {
+                currentPage++;
+                loadMoreShows();
+            }
+        });
+    }
+
+    async function loadMoreShows() {
+        isLoading = true;
+        const loadingIndicator = document.getElementById('tvGrid').parentElement.querySelector('#loadingIndicator') || createLoadingIndicator();
+        loadingIndicator.style.display = 'block';
+
+        const data = await fetchAPI(`/shows/popular?page=${currentPage}`);
+        if (data && data.success) {
+            appendShows(data.data.results);
+        }
+
+        loadingIndicator.style.display = 'none';
+        isLoading = false;
+    }
+
+    function createLoadingIndicator() {
+        const indicator = document.createElement('div');
+        indicator.id = 'loadingIndicator';
+        indicator.style.cssText = 'display: none; text-align: center; padding: 2rem; color: #a1a1a1;';
+        indicator.textContent = 'Loading more shows...';
+        document.getElementById('tv').appendChild(indicator);
+        return indicator;
+    }
+
+    async function fetchAPI(endpoint) {
+        try {
+            const response = await fetch(`${API_BASE_URL}${endpoint}`);
+            if (!response.ok) throw new Error('API Error');
+            return await response.json();
+        } catch (error) {
+            console.error('API Error:', error);
+            return null;
+        }
+    }
+
+    function displayShows(shows) {
+        const grid = document.getElementById('tvGrid');
+        if (!grid) return;
+        grid.innerHTML = '';
+        shows.forEach(show => {
+            const card = createMovieCard(show, 'show');
+            grid.appendChild(card);
+        });
+    }
+
+    function appendShows(shows) {
+        const grid = document.getElementById('tvGrid');
+        if (!grid) return;
+        shows.forEach(show => {
+            const card = createMovieCard(show, 'show');
+            grid.appendChild(card);
+        });
+    }
+
+    function createMovieCard(item, type) {
+        const card = document.createElement('div');
+        card.className = 'movie-card';
+        
+        const posterPath = item.poster_path ? `https://image.tmdb.org/t/p/w300${item.poster_path}` : 'https://via.placeholder.com/300x450?text=No+Image';
+        const title = item.title || item.name;
+        const year = item.release_date ? new Date(item.release_date).getFullYear() : (item.first_air_date ? new Date(item.first_air_date).getFullYear() : 'N/A');
+        const rating = item.vote_average ? item.vote_average.toFixed(1) : 'N/A';
+        const label = type === 'show' ? 'SERIES' : 'MOVIE';
+
+        card.innerHTML = `
+            <div class="movie-image">
+                <img src="${posterPath}" alt="${title}" onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
+                <div class="movie-overlay">
+                    <button class="play-btn" data-movie-id="${item.id}" data-movie-type="${type}">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div>
+                <span class="movie-label ${type === 'show' ? 'series-label' : ''}">${label}</span>
+                <h3 class="movie-title">${title}</h3>
+                <p class="movie-meta">${year} • ${rating}/10</p>
+            </div>
+        `;
+
+        card.addEventListener('mouseenter', () => {
+            card.style.transform = 'translateY(-10px)';
+        });
+
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'translateY(0)';
+        });
+
+        const playBtn = card.querySelector('.play-btn');
+        playBtn.addEventListener('click', function() {
+            openMovieModal(item, type);
+        });
+
+        return card;
+    }
+
+    function initializeSearch() {
+        const searchInput = document.getElementById('searchInput');
+        if (!searchInput) return;
+
+        let searchTimeout;
+        searchInput.addEventListener('input', function(e) {
+            clearTimeout(searchTimeout);
+            const query = e.target.value.trim();
+            
+            if (query.length < 2) {
+                loadAllShows();
+                return;
+            }
+
+            searchTimeout = setTimeout(() => {
+                searchShows(query);
+            }, 300);
+        });
+    }
+
+    async function searchShows(query) {
+        const data = await fetchAPI(`/search?q=${encodeURIComponent(query)}`);
+        if (data && data.success) {
+            const grid = document.getElementById('tvGrid');
+            grid.innerHTML = '';
+            data.results.slice(0, 24).forEach(item => {
+                const type = item.media_type === 'tv' ? 'show' : 'movie';
+                const card = createMovieCard(item, type);
+                grid.appendChild(card);
+            });
+        }
+    }
+
+    let currentMovie = null;
+    let currentMediaType = null;
+
+    function openMovieModal(movie, type) {
+        currentMovie = movie;
+        currentMediaType = type;
+
+        const modal = document.getElementById('movieModal');
+        const posterPath = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : 'https://via.placeholder.com/300x450?text=No+Image';
+        
+        document.getElementById('modalPoster').src = posterPath;
+        document.getElementById('modalTitle').textContent = movie.title || movie.name;
+        
+        const year = movie.release_date ? new Date(movie.release_date).getFullYear() : (movie.first_air_date ? new Date(movie.first_air_date).getFullYear() : 'N/A');
+        const releaseDate = movie.release_date || movie.first_air_date || 'N/A';
+        document.getElementById('modalYear').textContent = `${year} • ${releaseDate}`;
+        
+        const rating = movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A';
+        document.getElementById('modalRating').textContent = `★ ${rating}/10 Rating`;
+        
+        document.getElementById('modalOverview').textContent = movie.overview || 'No description available';
+        
+        document.getElementById('modalGenre').textContent = type === 'show' ? 'TV Series' : 'Movie';
+        document.getElementById('modalStatus').textContent = movie.status || (movie.first_air_date ? 'Ongoing' : 'Upcoming');
+        
+        modal.classList.add('active');
+    }
+
+    function closeMovieModal() {
+        const modal = document.getElementById('movieModal');
+        modal.classList.remove('active');
+    }
+
+    function initializeModal() {
+        const modal = document.getElementById('movieModal');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const closeBtn = document.getElementById('closeBtn');
+        const modalCloseBtn = document.querySelector('.modal-close');
+        const watchBtn = document.getElementById('watchBtn');
+
+        if (modalOverlay) modalOverlay.addEventListener('click', closeMovieModal);
+        if (closeBtn) closeBtn.addEventListener('click', closeMovieModal);
+        if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeMovieModal);
+
+        if (watchBtn) {
+            watchBtn.addEventListener('click', function() {
+                if (currentMovie) {
+                    window.location.href = `watch.html?id=${currentMovie.id}&type=${currentMediaType}&title=${encodeURIComponent(currentMovie.title || currentMovie.name)}`;
+                }
+            });
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeMovieModal();
+        });
+    }
+
+    function initializeScrollAnimations() {
+        // Scroll animations disabled for smooth scrolling experience
+    }
+</script>
+
+</body>
+</html>
+
