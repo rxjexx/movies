@@ -260,8 +260,12 @@ function applySafeAreas() {
 document.addEventListener('DOMContentLoaded', applySafeAreas);
 window.addEventListener('orientationchange', applySafeAreas);
 
+
 /* ========================
-   EXPORT FOR TESTING
+   MODULE INITIALIZATION
    ======================== */
 
-export { DeviceDetector, ResponsiveUtils, ResponsiveImageLoader };
+// Initialize device detector on page load
+document.addEventListener('DOMContentLoaded', () => {
+    const detector = new DeviceDetector();
+});
