@@ -1438,6 +1438,13 @@ function showCloudRemoteModal(remoteURL) {
         
         if (openWindowBtn) {
             openWindowBtn.addEventListener('click', () => {
+                // Check if we're on a console/device where window.open won't work
+                if (!window.open || typeof window.open !== 'function') {
+                    // Load remote in same window/tab
+                    window.location.href = remoteURL;
+                    return;
+                }
+                
                 const remoteWindow = window.open(remoteURL, 'lumiereRemote', 'width=500,height=800,resizable=yes');
                 if (remoteWindow) {
                     remoteWindow.focus();
