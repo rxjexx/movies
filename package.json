@@ -1,0 +1,16 @@
+{
+  "name": "lumiere-frontend",
+  "version": "1.0.0",
+  "description": "LUMIÈRE Movie Streaming Frontend",
+  "main": "index.html",
+  "scripts": {
+    "start": "http-server -p 3000 -o",
+    "dev": "http-server -p 3000"
+  },
+  "keywords": ["movies", "streaming", "frontend"],
+  "author": "Ethan",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

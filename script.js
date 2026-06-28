@@ -7,9 +7,20 @@ const TMDB_API_KEY = '9f3a94034c696a33133c40385d030817';
 
 // Get the current host for remote control URL
 function getRemoteURL() {
-    const protocol = window.location.protocol;
-    const host = window.location.host;
-    return `${protocol}//${host}/remote.html`;
+    // Get the current page's directory path
+    const currentPath = window.location.pathname;
+    const currentDir = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+    
+    // Construct the remote URL relative to current directory
+    if (window.location.protocol === 'file:') {
+        // Local file access
+        return window.location.href.replace(/\/[^\/]*\.html$/, '/remote.html');
+    } else {
+        // HTTP/HTTPS
+        const protocol = window.location.protocol;
+        const host = window.location.host;
+        return `${protocol}//${host}${currentDir}remote.html`;
+    }
 }
 
 // Cache popular movies for reuse across sections
@@ -22,12 +33,18 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeModal();
     initializeScrollAnimations();
     initializeCloudRemote();
+    initializeRemoteConnectionMonitor();
     initializeResponsiveSystem();
 });
 
 // Load all page data in parallel to reduce sequential API calls
 async function loadPageData() {
     try {
+        // Check which page we're on
+        const isMoviesPage = document.getElementById('movies') !== null;
+        const isTVPage = document.getElementById('tv') !== null;
+        const hasFloatingCards = document.getElementById('floatingCardsContainer') !== null;
+        
         // Load all data simultaneously - call TMDB directly
         const [trendingData, showsData] = await Promise.all([
             fetchAPI('/movie/popular?page=1'), // Get popular movies
@@ -37,17 +54,151 @@ async function loadPageData() {
         // Cache the popular movies for floating cards
         if (trendingData && trendingData.results) {
             cachedPopularMovies = trendingData.results;
-            displayMoviesCarousel(cachedPopularMovies, 'movies');
-            initializeFloatingCardRotation(cachedPopularMovies);
+            
+            // On index/home page: use carousel and floating cards
+            if (hasFloatingCards) {
+                displayMoviesCarousel(cachedPopularMovies, 'movies');
+                initializeFloatingCardRotation(cachedPopularMovies);
+            }
+            // On dedicated movies page: use grid with infinite scroll
+            else if (isMoviesPage) {
+                initializeInfiniteScroll('movie', trendingData);
+            }
         }
         
         // Display shows
         if (showsData && showsData.results) {
-            displayMoviesCarousel(showsData.results, 'tv');
+            // On index/home page: use carousel
+            if (hasFloatingCards) {
+                displayMoviesCarousel(showsData.results, 'tv');
+            }
+            // On dedicated TV page: use grid with infinite scroll
+            else if (isTVPage) {
+                initializeInfiniteScroll('tv', showsData);
+            }
         }
     } catch (error) {
         console.error('Error loading page data:', error);
     }
+}
+
+// Infinite scroll variables
+let currentMoviePage = 1;
+let currentTVPage = 1;
+let isLoadingMovies = false;
+let isLoadingTV = false;
+let hasMoreMovies = true;
+let hasMoreTV = true;
+
+function initializeInfiniteScroll(type, initialData) {
+    const sectionId = type === 'movie' ? 'movies' : 'tv';
+    const gridId = type === 'movie' ? 'moviesGrid' : 'tvGrid';
+    
+    // Display initial data
+    if (type === 'movie') {
+        displayMovies(initialData.results, sectionId);
+        hasMoreMovies = initialData.page < initialData.total_pages;
+    } else {
+        displayShows(initialData.results, sectionId);
+        hasMoreTV = initialData.page < initialData.total_pages;
+    }
+    
+    // Set up infinite scroll listener
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                if (type === 'movie' && !isLoadingMovies && hasMoreMovies) {
+                    loadMoreMovies();
+                } else if (type === 'tv' && !isLoadingTV && hasMoreTV) {
+                    loadMoreTV();
+                }
+            }
+        });
+    }, { rootMargin: '500px' });
+    
+    // Create sentinel element at the bottom
+    const gridElement = document.getElementById(gridId);
+    const sentinel = document.createElement('div');
+    sentinel.id = `${type}-sentinel`;
+    sentinel.style.height = '20px';
+    gridElement.parentElement.appendChild(sentinel);
+    observer.observe(sentinel);
+    
+    window.movieInfiniteObserver = observer;
+}
+
+async function loadMoreMovies() {
+    if (isLoadingMovies || !hasMoreMovies) return;
+    
+    isLoadingMovies = true;
+    currentMoviePage++;
+    
+    try {
+        const data = await fetchAPI(`/movie/popular?page=${currentMoviePage}`);
+        if (data && data.results) {
+            appendMovies(data.results, 'movies');
+            hasMoreMovies = currentMoviePage < data.total_pages;
+        }
+    } catch (error) {
+        console.error('Error loading more movies:', error);
+        currentMoviePage--;
+    } finally {
+        isLoadingMovies = false;
+    }
+}
+
+async function loadMoreTV() {
+    if (isLoadingTV || !hasMoreTV) return;
+    
+    isLoadingTV = true;
+    currentTVPage++;
+    
+    try {
+        const data = await fetchAPI(`/tv/popular?page=${currentTVPage}`);
+        if (data && data.results) {
+            appendShows(data.results, 'tv');
+            hasMoreTV = currentTVPage < data.total_pages;
+        }
+    } catch (error) {
+        console.error('Error loading more TV shows:', error);
+        currentTVPage--;
+    } finally {
+        isLoadingTV = false;
+    }
+}
+
+function appendMovies(movies, section) {
+    const sectionElement = document.getElementById(section);
+    if (!sectionElement) return;
+
+    const gridElement = sectionElement.querySelector('.movie-grid');
+    if (!gridElement) return;
+
+    movies.forEach((movie, index) => {
+        try {
+            const card = createMovieCard(movie, 'movie');
+            gridElement.appendChild(card);
+        } catch (error) {
+            console.error('Error creating card for movie', index, error);
+        }
+    });
+}
+
+function appendShows(shows, section) {
+    const sectionElement = document.getElementById(section);
+    if (!sectionElement) return;
+
+    const gridElement = sectionElement.querySelector('.movie-grid');
+    if (!gridElement) return;
+
+    shows.forEach((show, index) => {
+        try {
+            const card = createMovieCard(show, 'show');
+            gridElement.appendChild(card);
+        } catch (error) {
+            console.error('Error creating card for show', index, error);
+        }
+    });
 }
 
 /* ========================
@@ -57,7 +208,9 @@ async function loadPageData() {
 async function fetchAPI(endpoint) {
     try {
         // Call TMDB API directly with the key
-        const url = `${API_BASE_URL}${endpoint}&api_key=${TMDB_API_KEY}`;
+        // Handle query parameters correctly
+        const separator = endpoint.includes('?') ? '&' : '?';
+        const url = `${API_BASE_URL}${endpoint}${separator}api_key=${TMDB_API_KEY}`;
         
         console.log('Fetching:', url);
         
@@ -148,19 +301,22 @@ function createFloatingCard(item, type, index) {
         padding: 0.75rem;
         z-index: ${60 + index};
         cursor: pointer;
-        transition: all 0.5s ease-out;
-        transform: rotate(${rotation}deg);
+        transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        transform: rotate(${rotation}deg) scale(1);
         display: block;
+        opacity: 1;
     `;
     
     card.onmouseenter = () => {
         card.style.transform = `scale(1.05) rotate(${rotation}deg) translateY(-10px)`;
         card.style.zIndex = String(100);
+        card.style.transition = 'all 0.3s ease-out';
     };
     
     card.onmouseleave = () => {
-        card.style.transform = `rotate(${rotation}deg)`;
+        card.style.transform = `rotate(${rotation}deg) scale(1)`;
         card.style.zIndex = String(60 + index);
+        card.style.transition = 'all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
     };
     
     const posterPath = item.poster_path ? `https://image.tmdb.org/t/p/w300${item.poster_path}` : 'https://via.placeholder.com/300x450?text=No+Image';
@@ -170,7 +326,7 @@ function createFloatingCard(item, type, index) {
     const label = type === 'show' ? 'SERIES' : 'MOVIE';
 
     card.innerHTML = `
-        <div style="position: relative; width: 100%; height: 100%; border-radius: 0.75rem; overflow: hidden; background: #18181b; box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);">
+        <div style="position: relative; width: 100%; height: 100%; border-radius: 0.75rem; overflow: hidden; background: #18181b; box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); transition: all 0.4s ease;">
             <img src="${posterPath}" alt="${title}" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.95; transition: transform 0.7s ease;" onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
             <div style="background: linear-gradient(to top right, rgba(0,0,0,0.4), transparent); position: absolute; top: 0; right: 0; bottom: 0; left: 0;"></div>
             <div class="movie-overlay" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(4px);">
@@ -184,22 +340,36 @@ function createFloatingCard(item, type, index) {
         </div>
     `;
 
-    // Add hover effects
+    // Add hover effects with smooth transitions
     const img = card.querySelector('img');
     const overlay = card.querySelector('.movie-overlay');
     
     card.addEventListener('mouseenter', () => {
-        if (img) img.style.transform = 'scale(1.1)';
-        if (overlay) overlay.style.opacity = '1';
+        if (img) {
+            img.style.transform = 'scale(1.1)';
+            img.style.transition = 'transform 0.4s ease';
+        }
+        if (overlay) {
+            overlay.style.opacity = '1';
+            overlay.style.transition = 'opacity 0.3s ease';
+        }
         card.style.transform = `scale(1.05) rotate(${rotation}deg) translateY(-10px)`;
         card.style.zIndex = '100';
+        card.style.transition = 'all 0.3s ease-out';
     });
 
     card.addEventListener('mouseleave', () => {
-        if (img) img.style.transform = 'scale(1)';
-        if (overlay) overlay.style.opacity = '0';
-        card.style.transform = `rotate(${rotation}deg)`;
+        if (img) {
+            img.style.transform = 'scale(1)';
+            img.style.transition = 'transform 0.6s ease';
+        }
+        if (overlay) {
+            overlay.style.opacity = '0';
+            overlay.style.transition = 'opacity 0.3s ease';
+        }
+        card.style.transform = `rotate(${rotation}deg) scale(1)`;
         card.style.zIndex = String(60 + index);
+        card.style.transition = 'all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
     });
 
     // Play button click handler
@@ -213,7 +383,7 @@ function createFloatingCard(item, type, index) {
 }
 
 
-// Carousel display with smaller cards and hover scrolling
+// Carousel display with smooth hover scrolling
 function displayMoviesCarousel(items, section) {
     console.log('Displaying carousel:', section, 'Count:', items ? items.length : 0);
     
@@ -237,25 +407,44 @@ function displayMoviesCarousel(items, section) {
     gridElement.style.scrollBehavior = 'smooth';
     gridElement.style.scrollbarWidth = 'none';
     
-    // Add hover scrolling
-    let isScrolling = false;
+    // Smooth hover scrolling
+    let scrollAnimationId = null;
+    let scrollVelocity = 0;
+    const maxScrollVelocity = 8;
+    const scrollAcceleration = 0.3;
+    const scrollFriction = 0.95;
+    
     gridElement.addEventListener('mouseenter', () => {
-        isScrolling = true;
-        const scrollAmount = 5;
-        const scrollInterval = setInterval(() => {
-            if (!isScrolling) {
-                clearInterval(scrollInterval);
-                return;
-            }
-            gridElement.scrollLeft += scrollAmount;
-            if (gridElement.scrollLeft >= gridElement.scrollWidth - gridElement.clientWidth) {
-                gridElement.scrollLeft = 0;
-            }
-        }, 50);
+        // Start smooth scrolling animation
+        if (!scrollAnimationId) {
+            scrollVelocity = maxScrollVelocity;
+            const animateScroll = () => {
+                if (scrollVelocity > 0.5) {
+                    gridElement.scrollLeft += scrollVelocity;
+                    scrollVelocity *= scrollFriction;
+                    scrollAnimationId = requestAnimationFrame(animateScroll);
+                } else {
+                    // Loop back to start smoothly
+                    if (gridElement.scrollLeft >= gridElement.scrollWidth - gridElement.clientWidth - 50) {
+                        gridElement.scrollLeft = 0;
+                        scrollVelocity = maxScrollVelocity;
+                        scrollAnimationId = requestAnimationFrame(animateScroll);
+                    } else {
+                        scrollAnimationId = null;
+                    }
+                }
+            };
+            scrollAnimationId = requestAnimationFrame(animateScroll);
+        }
     });
     
     gridElement.addEventListener('mouseleave', () => {
-        isScrolling = false;
+        // Keep momentum but gradually stop
+        if (scrollAnimationId) {
+            cancelAnimationFrame(scrollAnimationId);
+            scrollAnimationId = null;
+        }
+        scrollVelocity = 0;
     });
 
     if (!items || items.length === 0) {
@@ -330,9 +519,10 @@ function createCarouselCard(item, type) {
     return card;
 }
 
-// Rotating floating cards
+// Rotating floating cards with smooth movie transitions (no position change)
 let floatingCardIndex = 0;
 let floatingCardRotationInterval = null;
+let isTransitioning = false;
 
 function initializeFloatingCardRotation(movies) {
     if (!movies || movies.length === 0) return;
@@ -343,17 +533,55 @@ function initializeFloatingCardRotation(movies) {
     // Initial display
     displayFloatingCards(movies.slice(0, 6));
 
-    // Rotate every 5 seconds
+    // Rotate every 5 seconds with smooth image transitions
     if (floatingCardRotationInterval) {
         clearInterval(floatingCardRotationInterval);
     }
 
     floatingCardRotationInterval = setInterval(() => {
-        floatingCardIndex = (floatingCardIndex + 1) % Math.max(1, movies.length - 5);
-        const nextSet = movies.slice(floatingCardIndex, floatingCardIndex + 6);
-        if (nextSet.length === 6) {
-            displayFloatingCards(nextSet);
-        }
+        if (isTransitioning) return;
+        
+        isTransitioning = true;
+        
+        // Get current cards
+        const cards = container.querySelectorAll('.float-card-1, .float-card-2, .float-card-3, .float-card-4, .float-card-5, .float-card-6');
+        
+        // Fade out images smoothly
+        cards.forEach(card => {
+            const img = card.querySelector('img');
+            if (img) {
+                img.style.opacity = '0.3';
+                img.style.transition = 'opacity 0.5s ease-out';
+            }
+        });
+
+        // After fade out, switch movies
+        setTimeout(() => {
+            floatingCardIndex = (floatingCardIndex + 1) % Math.max(1, movies.length - 5);
+            const nextSet = movies.slice(floatingCardIndex, floatingCardIndex + 6);
+            
+            if (nextSet.length === 6) {
+                // Update each card's image without changing position/rotation
+                cards.forEach((card, index) => {
+                    const movie = nextSet[index];
+                    const posterPath = movie.poster_path ? `https://image.tmdb.org/t/p/w300${movie.poster_path}` : 'https://via.placeholder.com/300x450?text=No+Image';
+                    
+                    const img = card.querySelector('img');
+                    if (img) {
+                        // Set new image and fade in
+                        img.src = posterPath;
+                        img.alt = movie.title || movie.name;
+                        
+                        setTimeout(() => {
+                            img.style.opacity = '0.95';
+                            img.style.transition = 'opacity 0.6s ease-in';
+                        }, 50);
+                    }
+                });
+            }
+            
+            isTransitioning = false;
+        }, 500);
     }, 5000);
 }
 
@@ -379,7 +607,8 @@ function displayMovies(movies, section) {
         return;
     }
 
-    movies.slice(0, 12).forEach((movie, index) => {
+    // Display initial batch (will load more on scroll)
+    movies.forEach((movie, index) => {
         try {
             const card = createMovieCard(movie, 'movie');
             gridElement.appendChild(card);
@@ -411,7 +640,8 @@ function displayShows(shows, section) {
         return;
     }
 
-    shows.slice(0, 12).forEach((show, index) => {
+    // Display initial batch (will load more on scroll)
+    shows.forEach((show, index) => {
         try {
             const card = createMovieCard(show, 'show');
             gridElement.appendChild(card);
@@ -841,66 +1071,421 @@ window.addEventListener('scroll', () => {
 
 function initializeCloudRemote() {
     const cloudRemoteBtn = document.getElementById('cloudRemoteBtn');
-    const cloudRemoteModal = document.getElementById('cloudRemoteModal');
-    const cloudRemoteOverlay = document.getElementById('cloudRemoteOverlay');
-    const closeCloudRemote = document.getElementById('closeCloudRemote');
-    const closeCloudRemoteBtn = document.getElementById('closeCloudRemoteBtn');
-    const copyRemoteLinkBtn = document.getElementById('copyRemoteLinkBtn');
-    const remoteLink = document.getElementById('remoteLink');
-
-    if (!cloudRemoteBtn || !cloudRemoteModal) return;
+    
+    if (!cloudRemoteBtn) return;
 
     const remoteURL = getRemoteURL();
-    remoteLink.textContent = remoteURL;
+    console.log('Cloud Remote URL:', remoteURL);
 
-    // Open modal
+    // Open modal instead of new window
     cloudRemoteBtn.addEventListener('click', () => {
-        cloudRemoteModal.classList.add('active');
-        generateQRCode(remoteURL);
+        showCloudRemoteModal(remoteURL);
     });
+}
 
-    // Close modal functions
-    const closeModal = () => {
-        cloudRemoteModal.classList.remove('active');
+// Monitor remote connection status
+function initializeRemoteConnectionMonitor() {
+    console.log('📡 Remote connection monitor started');
+    
+    const updateIconState = () => {
+        const cloudRemoteIcon = document.getElementById('cloudRemoteIcon');
+        if (!cloudRemoteIcon) return;
+        
+        const isRemoteConnected = localStorage.getItem('lumiereRemoteConnected') === 'true';
+        
+        if (isRemoteConnected) {
+            // Check if code is still valid
+            const codeData = localStorage.getItem('lumiereRemoteCode');
+            if (codeData) {
+                try {
+                    const code = JSON.parse(codeData);
+                    const currentTime = Date.now();
+                    // Code expires after 5 minutes
+                    if (currentTime - code.timestamp > 5 * 60 * 1000) {
+                        // Code expired, disconnect
+                        localStorage.removeItem('lumiereRemoteConnected');
+                        cloudRemoteIcon.style.filter = 'none';
+                        cloudRemoteIcon.style.opacity = '0.7';
+                        return;
+                    }
+                } catch (e) {}
+            }
+            
+            // Connected and valid
+            cloudRemoteIcon.style.filter = 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.8))';
+            cloudRemoteIcon.style.opacity = '1';
+        } else {
+            // Not connected
+            cloudRemoteIcon.style.filter = 'none';
+            cloudRemoteIcon.style.opacity = '0.7';
+        }
     };
-
-    cloudRemoteOverlay.addEventListener('click', closeModal);
-    closeCloudRemote.addEventListener('click', closeModal);
-    closeCloudRemoteBtn.addEventListener('click', closeModal);
-
-    // Copy to clipboard
-    copyRemoteLinkBtn.addEventListener('click', () => {
-        navigator.clipboard.writeText(remoteURL).then(() => {
-            const originalText = copyRemoteLinkBtn.innerHTML;
-            copyRemoteLinkBtn.innerHTML = '<iconify-icon icon="solar:check-circle-linear" style="width: 18px; height: 18px;"></iconify-icon>';
-            setTimeout(() => {
-                copyRemoteLinkBtn.innerHTML = originalText;
-            }, 2000);
-        }).catch(err => {
-            console.error('Failed to copy:', err);
-        });
-    });
-
-    // Close with Escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && cloudRemoteModal.classList.contains('active')) {
-            closeModal();
+    
+    // Check periodically
+    setInterval(updateIconState, 500);
+    
+    // Also listen for storage changes
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'lumiereRemoteConnected' || e.key === 'lumiereRemoteCode') {
+            console.log('🔄 Remote connection status changed');
+            updateIconState();
         }
     });
 }
 
-function generateQRCode(url) {
-    const qrcodeDiv = document.getElementById('qrcode');
-    qrcodeDiv.innerHTML = ''; // Clear previous QR code
+function showCloudRemoteModal(remoteURL) {
+    // Always generate a NEW code each time the modal is opened
+    function generateConnectionCode() {
+        return Math.random().toString().slice(2, 8).padEnd(6, '0').substring(0, 6);
+    }
     
-    new QRCode(qrcodeDiv, {
-        text: url,
-        width: 200,
-        height: 200,
-        colorDark: '#000000',
-        colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.H
-    });
+    const connectionCode = generateConnectionCode();
+    const codeTimestamp = Date.now();
+    
+    // Store the code in localStorage for the remote page to validate
+    localStorage.setItem('lumiereRemoteCode', JSON.stringify({
+        code: connectionCode,
+        timestamp: codeTimestamp
+    }));
+    
+    // Clear remote connected flag when new code is shown
+    localStorage.removeItem('lumiereRemoteConnected');
+    
+    console.log('Generated NEW connection code:', connectionCode);
+    
+    // Create modal if it doesn't exist
+    let modal = document.getElementById('cloudRemoteModal');
+    
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'cloudRemoteModal';
+        document.body.appendChild(modal);
+    }
+    
+    // Add animation styles if not already added
+    if (!document.getElementById('modalAnimations')) {
+        const style = document.createElement('style');
+        style.id = 'modalAnimations';
+        style.textContent = `
+            @keyframes fadeInBlur {
+                0% {
+                    opacity: 0;
+                    backdrop-filter: blur(0px);
+                }
+                100% {
+                    opacity: 1;
+                    backdrop-filter: blur(8px);
+                }
+            }
+            
+            @keyframes slideUpScale {
+                0% {
+                    opacity: 0;
+                    transform: translate(-50%, calc(-50% + 30px)) scale(0.85);
+                }
+                100% {
+                    opacity: 1;
+                    transform: translate(-50%, -50%) scale(1);
+                }
+            }
+            
+            .modal-card {
+                animation: slideUpScale 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Apply modal styles
+    modal.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(8px);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeInBlur 0.4s ease-out;
+    `;
+    
+    // Update modal content with new URL - NO GLOW
+    modal.innerHTML = `
+        <div class="modal-card" style="
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 1.2rem;
+            width: 320px;
+            max-width: 90%;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 10000;
+        ">
+            <button id="closeCloudRemoteBtn" style="
+                position: absolute;
+                top: 0.75rem;
+                right: 0.75rem;
+                background: rgba(255, 255, 255, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                color: #ffffff;
+                font-size: 1.3rem;
+                cursor: pointer;
+                padding: 0;
+                width: 30px;
+                height: 30px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+                border-radius: 50%;
+                backdrop-filter: blur(10px);
+                z-index: 10001;
+            " title="Close">×</button>
+            
+            <h2 style="
+                color: #ffffff;
+                margin: 0 0 0.8rem 0;
+                font-size: 1.2rem;
+                font-weight: 700;
+                letter-spacing: -0.5px;
+                position: relative;
+                z-index: 1;
+            ">Cloud Remote</h2>
+            
+            <div style="
+                display: flex;
+                flex-direction: column;
+                gap: 0.8rem;
+                position: relative;
+                z-index: 1;
+            ">
+                <!-- Connection Code -->
+                <div style="
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 0.5rem;
+                    padding: 0.8rem;
+                    background: rgba(255, 255, 255, 0.05);
+                    border-radius: 14px;
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    backdrop-filter: blur(10px);
+                ">
+                    <p style="
+                        color: rgba(255, 255, 255, 0.8);
+                        margin: 0;
+                        font-size: 0.75rem;
+                        font-weight: 600;
+                        letter-spacing: 0.5px;
+                    ">CONNECTION CODE</p>
+                    <p style="
+                        color: #ffffff;
+                        margin: 0;
+                        font-size: 1.8rem;
+                        font-weight: 700;
+                        letter-spacing: 0.3em;
+                        font-family: 'Courier New', monospace;
+                    ">${connectionCode}</p>
+                    <p style="
+                        color: rgba(255, 255, 255, 0.6);
+                        margin: 0.5rem 0 0 0;
+                        font-size: 0.7rem;
+                    ">Valid for 5 minutes</p>
+                </div>
+                
+                <!-- Divider -->
+                <div style="
+                    height: 1px;
+                    background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0));
+                "></div>
+                
+                <!-- QR Code -->
+                <div style="
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 0.5rem;
+                    padding: 0.8rem;
+                    background: rgba(255, 255, 255, 0.05);
+                    border-radius: 14px;
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    backdrop-filter: blur(10px);
+                ">
+                    <p style="
+                        color: rgba(255, 255, 255, 0.8);
+                        margin: 0;
+                        font-size: 0.75rem;
+                        font-weight: 600;
+                        letter-spacing: 0.5px;
+                    ">OR SCAN QR</p>
+                    <div id="qrcode" style="
+                        background: #ffffff;
+                        padding: 0.5rem;
+                        border-radius: 8px;
+                    "></div>
+                </div>
+                
+                <!-- Divider -->
+                <div style="
+                    height: 1px;
+                    background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0));
+                "></div>
+                
+                <!-- Copy Button -->
+                <button id="copyRemoteLinkBtn" style="
+                    background: rgba(255, 255, 255, 0.1);
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    color: #ffffff;
+                    padding: 0.6rem;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+                    font-size: 0.8rem;
+                    font-weight: 600;
+                    backdrop-filter: blur(10px);
+                    width: 100%;
+                ">Copy Link</button>
+                
+                <!-- Open Remote Button -->
+                <button id="openRemoteWindowBtn" style="
+                    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    color: #ffffff;
+                    padding: 0.7rem;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 0.9rem;
+                    font-weight: 700;
+                    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+                    width: 100%;
+                    backdrop-filter: blur(10px);
+                    letter-spacing: 0.5px;
+                ">Open Remote</button>
+            </div>
+        </div>
+    `;
+    
+    // Set up event listeners
+    setTimeout(() => {
+        const closeBtn = modal.querySelector('#closeCloudRemoteBtn');
+        const copyBtn = modal.querySelector('#copyRemoteLinkBtn');
+        const openWindowBtn = modal.querySelector('#openRemoteWindowBtn');
+        const remoteLink = remoteURL;
+        
+        if (closeBtn) {
+            closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                closeModal();
+            });
+            
+            closeBtn.addEventListener('mouseenter', () => {
+                closeBtn.style.background = 'rgba(255, 255, 255, 0.2)';
+                closeBtn.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                closeBtn.style.transform = 'scale(1.1)';
+            });
+            
+            closeBtn.addEventListener('mouseleave', () => {
+                closeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+                closeBtn.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                closeBtn.style.transform = 'scale(1)';
+            });
+        }
+        
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+        }
+        
+        if (copyBtn) {
+            copyBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(remoteLink).then(() => {
+                    const originalText = copyBtn.textContent;
+                    copyBtn.textContent = '✓ Copied';
+                    copyBtn.style.background = 'rgba(100, 200, 100, 0.2)';
+                    copyBtn.style.borderColor = 'rgba(100, 200, 100, 0.4)';
+                    setTimeout(() => {
+                        copyBtn.textContent = originalText;
+                        copyBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+                        copyBtn.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                    }, 2000);
+                });
+            });
+            
+            copyBtn.addEventListener('mouseenter', () => {
+                copyBtn.style.background = 'rgba(255, 255, 255, 0.15)';
+                copyBtn.style.borderColor = 'rgba(255, 255, 255, 0.25)';
+                copyBtn.style.transform = 'scale(1.02)';
+            });
+            
+            copyBtn.addEventListener('mouseleave', () => {
+                copyBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+                copyBtn.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                copyBtn.style.transform = 'scale(1)';
+            });
+        }
+        
+        if (openWindowBtn) {
+            openWindowBtn.addEventListener('click', () => {
+                const remoteWindow = window.open(remoteURL, 'lumiereRemote', 'width=500,height=800,resizable=yes');
+                if (remoteWindow) {
+                    remoteWindow.focus();
+                }
+            });
+            
+            openWindowBtn.addEventListener('mouseenter', () => {
+                openWindowBtn.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.12) 100%)';
+                openWindowBtn.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                openWindowBtn.style.transform = 'translateY(-2px)';
+            });
+            
+            openWindowBtn.addEventListener('mouseleave', () => {
+                openWindowBtn.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%)';
+                openWindowBtn.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                openWindowBtn.style.transform = 'translateY(0)';
+            });
+        }
+    }, 0);
+    
+    function closeModal() {
+        modal.style.animation = 'fadeInBlur 0.4s ease-out reverse';
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 400);
+    }
+    
+    // Show modal
+    modal.style.display = 'flex';
+    
+    // Generate QR code
+    setTimeout(() => {
+        const qrcodeDiv = modal.querySelector('#qrcode');
+        if (qrcodeDiv) {
+            qrcodeDiv.innerHTML = '';
+            
+            if (typeof QRCode !== 'undefined') {
+                new QRCode(qrcodeDiv, {
+                    text: remoteURL,
+                    width: 120,
+                    height: 120,
+                    colorDark: '#000000',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            }
+        }
+    }, 50);
 }
 
 /* ========================

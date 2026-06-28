@@ -11,6 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="storage.js"></script>
+    <script src="responsive-detector.js"></script>
     <style>
         @keyframes animationIn {
             0% {
@@ -409,30 +410,84 @@
     // Fetch streams from backend with retry logic
     async function fetchStreams() {
         try {
-            console.log('Fetching streams for movie:', movieId);
+            console.log('Fetching streams for:', mediaType, 'ID:', movieId);
+            
+            // Build URLs based on media type
+            const urlPath = mediaType === 'show' ? 'tv' : 'movie';
             
             // Build streaming server URLs directly - no backend needed
             const streams = [
                 {
                     name: 'VidSrc.mov',
-                    url: `https://vidsrc.mov/embed/movie/${movieId}`,
+                    url: `https://vidsrc.mov/embed/${urlPath}/${movieId}`,
                     type: 'iframe',
                     quality: '1080p',
                     status: 'Primary - 100% Reliable'
                 },
                 {
+                    name: 'VidSrc.pro',
+                    url: `https://vidsrc.pro/embed/${urlPath}/${movieId}`,
+                    type: 'iframe',
+                    quality: '1080p/4K',
+                    status: 'Ultra Reliable'
+                },
+                {
+                    name: 'MultiEmbed',
+                    url: `https://multiembed.mov/embed/${urlPath}/${movieId}`,
+                    type: 'iframe',
+                    quality: '1080p',
+                    status: 'Fast Loading'
+                },
+                {
+                    name: 'DbGo',
+                    url: `https://dbgo.fun/embed/${urlPath}/${movieId}`,
+                    type: 'iframe',
+                    quality: '720p-1080p',
+                    status: 'Stable Streaming'
+                },
+                {
                     name: 'AutoEmbed',
-                    url: `https://autoembed.co/movie/id/${movieId}`,
+                    url: mediaType === 'show' 
+                        ? `https://autoembed.co/tv/id/${movieId}`
+                        : `https://autoembed.co/movie/id/${movieId}`,
                     type: 'iframe',
                     quality: '720p-1080p',
                     status: 'Auto-Sourced - Fast'
                 },
                 {
                     name: 'VidSrc.lol',
-                    url: `https://vidsrc.lol/embed/movie/${movieId}`,
+                    url: `https://vidsrc.lol/embed/${urlPath}/${movieId}`,
                     type: 'iframe',
                     quality: '1080p/4K',
                     status: 'Backup - Reliable'
+                },
+                {
+                    name: 'Embed.su',
+                    url: `https://embed.su/embed/${urlPath}/${movieId}`,
+                    type: 'iframe',
+                    quality: '720p-1080p',
+                    status: 'Dependable'
+                },
+                {
+                    name: 'FlixHQ',
+                    url: `https://flixhq.top/embed/${urlPath}/${movieId}`,
+                    type: 'iframe',
+                    quality: '1080p',
+                    status: 'Quality Streaming'
+                },
+                {
+                    name: 'HiAnime',
+                    url: `https://hianime.to/embed/${urlPath}/${movieId}`,
+                    type: 'iframe',
+                    quality: '720p-1080p',
+                    status: 'High Speed'
+                },
+                {
+                    name: 'Moonstream',
+                    url: `https://moonstream.to/embed/${urlPath}/${movieId}`,
+                    type: 'iframe',
+                    quality: '1080p',
+                    status: 'Smooth Playback'
                 }
             ];
             
@@ -615,9 +670,248 @@
         // DOM is already loaded
         initializeWatch();
     }
+    
+    // Initialize remote listener
+    initializeRemoteListener();
 
-    console.log('Watch Page script initialized - ID:', movieId, 'Type:', mediaType, 'Title:', title);
+    // ========================
+    // REMOTE CONTROL HANDLER
+    // ========================
+    
+    let playerState = {
+        isPlaying: false,
+        currentTime: 0,
+        duration: 0,
+        volume: 1,
+        brightness: 100
+    };
+
+    // Listen for remote commands from remote.html
+    function initializeRemoteListener() {
+        console.log('%c🎮 Remote Control System Initialized', 'font-size: 12px; color: #60a5fa; background: rgba(96, 165, 250, 0.1); padding: 4px 8px; border-radius: 3px;');
+        console.log('📡 Listening for commands from remote.html...');
+        console.log('💡 Tip: Open the remote in a separate window to start controlling');
+        
+        // Listen for storage changes (from remote.html in different window)
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'lumiereRemoteCommand') {
+                try {
+                    const command = JSON.parse(e.newValue);
+                    handleRemoteCommand(command);
+                } catch (error) {
+                    console.error('Error parsing remote command:', error);
+                }
+            }
+        });
+        
+        // Also listen for local events (same window/tab)
+        window.addEventListener('lumiere:remote', function(e) {
+            handleRemoteCommand(e.detail);
+        });
+        
+        console.log('✅ Remote listener initialized - ready to receive commands');
+    }
+
+    // Handle incoming remote commands
+    function handleRemoteCommand(payload) {
+        const { command, data } = payload;
+        console.log('📡 Remote command received:', command, data);
+        
+        const videoFrame = document.getElementById('videoPlayer');
+        
+        switch(command) {
+            case 'playback':
+                handlePlaybackControl(data.action, videoFrame);
+                break;
+                
+            case 'seek':
+                handleSeek(data.amount, videoFrame);
+                break;
+                
+            case 'navigate':
+                handleNavigation(data.direction);
+                break;
+                
+            case 'select':
+                handleSelect();
+                break;
+                
+            case 'volume':
+                handleVolume(data.level);
+                break;
+                
+            case 'brightness':
+                handleBrightness(data.level);
+                break;
+                
+            default:
+                console.log('Unknown command:', command);
+        }
+    }
+
+    // Play/Pause control
+    function handlePlaybackControl(action, videoFrame) {
+        console.log('▶️ Playback:', action);
+        
+        try {
+            // Try to send message to iframe (some servers support this)
+            if (videoFrame && videoFrame.contentWindow) {
+                if (action === 'play') {
+                    videoFrame.contentWindow.postMessage({ action: 'play' }, '*');
+                } else if (action === 'pause') {
+                    videoFrame.contentWindow.postMessage({ action: 'pause' }, '*');
+                }
+            }
+        } catch (error) {
+            console.log('Note: Cannot directly control iframe player (cross-origin)', error);
+        }
+        
+        // Show visual feedback
+        showRemoteFeedback(action === 'play' ? '▶ Playing' : '⏸ Paused');
+    }
+
+    // Seek control (skip forward/backward)
+    function handleSeek(amount, videoFrame) {
+        console.log(`⏭️ Seek: ${amount}s`);
+        
+        try {
+            // Try to send seek message to iframe
+            if (videoFrame && videoFrame.contentWindow) {
+                videoFrame.contentWindow.postMessage({ action: 'seek', amount: amount }, '*');
+            }
+        } catch (error) {
+            console.log('Note: Cannot directly seek iframe player (cross-origin)', error);
+        }
+        
+        // Show visual feedback
+        const label = amount > 0 ? `⏩ +${amount}s` : `⏪ ${amount}s`;
+        showRemoteFeedback(label);
+    }
+
+    // Navigation (directional buttons)
+    function handleNavigation(direction) {
+        console.log('🎮 Navigate:', direction);
+        
+        try {
+            const videoFrame = document.getElementById('videoPlayer');
+            if (videoFrame && videoFrame.contentWindow) {
+                videoFrame.contentWindow.postMessage({ action: 'navigate', direction: direction }, '*');
+            }
+        } catch (error) {
+            console.log('Note: Cannot send navigation to iframe (cross-origin)', error);
+        }
+        
+        const icons = {
+            'up': '↑ Up',
+            'down': '↓ Down',
+            'left': '← Left',
+            'right': '→ Right'
+        };
+        
+        showRemoteFeedback(icons[direction] || direction);
+    }
+
+    // Select button
+    function handleSelect() {
+        console.log('✓ Select');
+        showRemoteFeedback('✓ Select');
+        
+        try {
+            const videoFrame = document.getElementById('videoPlayer');
+            if (videoFrame && videoFrame.contentWindow) {
+                videoFrame.contentWindow.postMessage({ action: 'select' }, '*');
+            }
+        } catch (error) {
+            console.log('Note: Cannot send select to iframe (cross-origin)', error);
+        }
+    }
+
+    // Volume control
+    function handleVolume(level) {
+        console.log(`🔊 Volume: ${level}%`);
+        playerState.volume = level / 100;
+        
+        // Apply volume to page if there's any audio element
+        document.querySelectorAll('audio, video').forEach(el => {
+            el.volume = playerState.volume;
+        });
+        
+        showRemoteFeedback(`🔊 Volume: ${level}%`);
+    }
+
+    // Brightness control
+    function handleBrightness(level) {
+        console.log(`💡 Brightness: ${level}%`);
+        playerState.brightness = level;
+        
+        // Apply brightness filter to player container
+        const playerSection = document.querySelector('.glass-card');
+        if (playerSection) {
+            playerSection.style.filter = `brightness(${level / 100})`;
+        }
+        
+        showRemoteFeedback(`💡 Brightness: ${level}%`);
+    }
+
+    // Show temporary feedback on screen
+    function showRemoteFeedback(message) {
+        // Remove existing feedback
+        const existing = document.getElementById('remoteFeedback');
+        if (existing) {
+            existing.remove();
+        }
+        
+        // Create feedback element
+        const feedback = document.createElement('div');
+        feedback.id = 'remoteFeedback';
+        feedback.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: #ffffff;
+            padding: 20px 40px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            z-index: 1000;
+            pointer-events: none;
+            animation: fadeInOut 0.8s ease-in-out;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+        `;
+        feedback.textContent = message;
+        
+        document.body.appendChild(feedback);
+        
+        // Remove after animation
+        setTimeout(() => {
+            feedback.remove();
+        }, 800);
+    }
+
+    // Add animation keyframes
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+        }
+    `;
+    document.head.appendChild(style);
 </script>
 
 </body>
 </html>
+
+
+<script>
+    // Initialize remote listener when page loads
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeRemoteListener);
+    } else {
+        initializeRemoteListener();
+    }
+</script>

@@ -1,12 +1,19 @@
 /* ========================
    AD BLOCKER POPUP INITIALIZATION
-   Runs on first visit
+   Runs on each visit - shows every 6 visits if "Maybe Later" is pressed
    ======================== */
 
 function initializeAdBlockerPopup() {
-    // Check if ad blocker popup has been shown
-    if (lumiereStorage.hasAdBlockerBeenShown()) {
-        console.log('Ad blocker popup already shown');
+    // Get current dismiss count from storage
+    let dismissCount = localStorage.getItem('adBlockerDismissCount') || '0';
+    dismissCount = parseInt(dismissCount);
+
+    // Check if ad blocker has been confirmed
+    const isConfirmed = localStorage.getItem('adBlockerConfirmed') === 'true';
+    
+    // If confirmed, don't show anymore
+    if (isConfirmed) {
+        console.log('Ad blocker already confirmed');
         return;
     }
 
@@ -15,7 +22,6 @@ function initializeAdBlockerPopup() {
         const modal = document.getElementById('adBlockerModal');
         if (modal) {
             modal.classList.add('active');
-            lumiereStorage.markAdBlockerShown();
         }
     }, 1500);
 
@@ -38,11 +44,29 @@ function initializeAdBlockerPopup() {
     if (closeAdBlocker) {
         closeAdBlocker.addEventListener('click', closePopup);
     }
+    
+    // "Maybe Later" button - increment counter and close
     if (dismissBtn) {
-        dismissBtn.addEventListener('click', closePopup);
+        dismissBtn.addEventListener('click', () => {
+            dismissCount++;
+            
+            // If they've dismissed 6 times, reset counter and show again on next visit
+            if (dismissCount >= 6) {
+                dismissCount = 0;
+            }
+            
+            localStorage.setItem('adBlockerDismissCount', dismissCount.toString());
+            closePopup();
+        });
     }
+    
+    // "Got It" button - mark as confirmed
     if (confirmBtn) {
-        confirmBtn.addEventListener('click', closePopup);
+        confirmBtn.addEventListener('click', () => {
+            localStorage.setItem('adBlockerConfirmed', 'true');
+            localStorage.setItem('adBlockerDismissCount', '0');
+            closePopup();
+        });
     }
 
     // Add button hover effects

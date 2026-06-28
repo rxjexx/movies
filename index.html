@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -15,6 +14,8 @@
     <link rel="stylesheet" href="responsive-enhancements.css">
     <script src="storage.js"></script>
     <script src="init-popup.js"></script>
+    <script src="carousel-controls.js"></script>
+    <script src="responsive-detector.js"></script>
     <style>
         @keyframes animationIn {
             0% {
@@ -145,6 +146,11 @@
         @keyframes float6 {
             0%, 100% { transform: translateY(0px) rotate(-3deg); }
             50% { transform: translateY(-22px) rotate(-3deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
         .float-card-1 { animation: float1 6s ease-in-out infinite; }
@@ -850,6 +856,34 @@
         .scroll-section.in-view { animation: none !important; opacity: 1 !important; transform: none !important; }
         .scroll-section.out-view { animation: none !important; opacity: 1 !important; transform: none !important; }
 
+        /* Smooth floating card transitions */
+        @keyframes cardFadeInScale {
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes cardFadeOutScale {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.8) translateY(20px);
+            }
+        }
+
+        .float-card-1, .float-card-2, .float-card-3, 
+        .float-card-4, .float-card-5, .float-card-6 {
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+        }
+
         @media (max-width: 768px) {
             .modal-content {
                 flex-direction: column;
@@ -930,25 +964,22 @@
 </div>
 
 <!-- Navigation -->
-<header class="fixed flex md:px-12 z-50 pointer-events-auto pt-6 pr-6 pb-6 pl-6 top-0 right-0 left-0 items-center justify-between">
-    <a href="#" class="flex items-center gap-2.5 text-xl tracking-tight font-medium text-white hover:opacity-80 transition-opacity">
+<header class="fixed flex z-50 pointer-events-auto pt-6 pr-6 pb-6 pl-6 top-0 right-0 left-0 items-center justify-center w-full">
+    <a href="#" class="flex items-center gap-2.5 text-xl tracking-tight font-medium text-white hover:opacity-80 transition-opacity absolute left-12">
         <iconify-icon icon="solar:clapperboard-play-linear" class="text-white w-5 h-5 flex items-center justify-center" style="stroke-width: 1.5;"></iconify-icon>
         LUMIÈRE
     </a>
     
-    <div class="hidden md:flex items-center gap-10 text-base font-normal text-zinc-400">
-        <a href="movies.html" class="flex items-center gap-1.5 hover:text-zinc-200 transition-colors group">
+    <div class="hidden md:flex items-center gap-8 text-base font-normal text-zinc-400" style="padding: 0 2rem;">
+        <a href="movies.html" class="flex items-center gap-1.5 hover:text-zinc-200 transition-colors group px-2" style="border: none !important; outline: none !important;">
             Movies <iconify-icon icon="solar:alt-arrow-down-linear" class="w-4 h-4 flex items-center justify-center opacity-50 group-hover:opacity-100 transition-opacity" style="stroke-width: 1.5;"></iconify-icon>
         </a>
-        <a href="tv.html" class="flex items-center gap-1.5 hover:text-zinc-200 transition-colors group">
+        <a href="tv.html" class="flex items-center gap-1.5 hover:text-zinc-200 transition-colors group px-2" style="border: none !important; outline: none !important;">
             TV <iconify-icon icon="solar:alt-arrow-down-linear" class="w-4 h-4 flex items-center justify-center opacity-50 group-hover:opacity-100 transition-opacity" style="stroke-width: 1.5;"></iconify-icon>
         </a>
-        <button id="cloudRemoteBtn" class="flex items-center gap-1.5 hover:text-zinc-200 transition-colors group">
-            Cloud Remote <iconify-icon icon="solar:smartphone-linear" class="w-4 h-4 flex items-center justify-center opacity-50 group-hover:opacity-100 transition-opacity" style="stroke-width: 1.5;"></iconify-icon>
-        </button>
     </div>
     
-    <div class="hidden md:flex items-center gap-6">
+    <div class="hidden md:flex items-center gap-6 absolute right-12">
         <div class="flex items-center gap-2 bg-black/50 backdrop-blur-sm border border-zinc-700/50 rounded-full px-4 py-2">
             <iconify-icon icon="solar:magnifer-linear" class="w-4 h-4 text-zinc-400" style="stroke-width: 1.5;"></iconify-icon>
             <input type="text" id="searchInput" placeholder="Search..." class="bg-transparent border-none outline-none text-sm text-zinc-300 placeholder:text-zinc-500 w-32">
@@ -1115,42 +1146,12 @@
         <div class="movie-grid"></div>
     </section>
 
-    <!-- Cloud Remote Modal -->
-    <div id="cloudRemoteModal" class="modal">
-        <div class="modal-overlay" id="cloudRemoteOverlay"></div>
-        <div class="modal-card" style="max-width: 600px;">
-            <button class="modal-close" id="closeCloudRemote">&times;</button>
-            <div class="modal-content" style="flex-direction: column; gap: 2rem; padding: 3rem;">
-                <div style="text-align: center;">
-                    <h2 class="modal-title" style="font-size: 2rem; margin-bottom: 0.5rem;">Cloud Remote</h2>
-                    <p style="color: rgba(255, 255, 255, 0.6); font-size: 0.95rem;">Control your streaming anywhere, anytime</p>
-                </div>
-                
-                <!-- QR Code Container -->
-                <div style="display: flex; justify-content: center; padding: 2rem; background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(20px);">
-                    <div id="qrcode" style="background: white; padding: 1rem; border-radius: 12px;"></div>
+
                 </div>
 
-                <!-- Link Section -->
-                <div style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(20px); padding: 1.5rem; display: flex; align-items: center; gap: 1rem;">
-                    <div style="flex: 1;">
-                        <p style="font-size: 0.75rem; color: rgba(255, 255, 255, 0.6); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; font-weight: 700;">Remote URL</p>
-                        <p id="remoteLink" style="color: rgba(255, 255, 255, 0.9); font-size: 0.9rem; word-break: break-all; font-family: monospace;">Loading...</p>
-                    </div>
-                    <button id="copyRemoteLinkBtn" class="btn btn-primary" style="flex-shrink: 0; padding: 0.75rem 1rem;">
-                        <iconify-icon icon="solar:copy-linear" style="width: 18px; height: 18px;"></iconify-icon>
-                    </button>
-                </div>
 
-                <!-- Info Text -->
-                <div style="text-align: center; padding: 1rem; background: rgba(255, 255, 255, 0.05); border-radius: 12px;">
-                    <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; line-height: 1.6;">
-                        Scan the QR code or click the link on any device to open the remote control interface. Control playback, volume, and more from your phone or tablet.
-                    </p>
-                </div>
 
-                <button class="btn btn-secondary" id="closeCloudRemoteBtn" style="width: 100%;">Close</button>
-            </div>
+</div>
         </div>
     </div>
 </main>
@@ -1166,3 +1167,233 @@
 
 </body>
 </html>
+
+<script>
+    // Initialize remote listener on main page
+    let remoteConnected = false;
+    let selectedMovieIndex = -1;
+    let allMovieCards = [];
+
+    function initializeMainPageRemote() {
+        console.log('🎮 Main page remote listener initialized');
+        
+        // Listen for storage changes (from remote.html in different window)
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'lumiereRemoteCommand') {
+                try {
+                    const command = JSON.parse(e.newValue);
+                    remoteConnected = true;
+                    handleMainPageRemoteCommand(command);
+                } catch (error) {
+                    console.error('Error parsing remote command:', error);
+                }
+            }
+            
+            // Listen for remote connection status
+            if (e.key === 'lumiereRemoteConnected') {
+                try {
+                    const status = JSON.parse(e.newValue);
+                    if (status.status === 'connected') {
+                        remoteConnected = true;
+                    }
+                } catch (error) {
+                    console.error('Error parsing remote status:', error);
+                }
+            }
+        });
+        
+        
+        // Check for remote window closure
+        window.addEventListener('blur', () => {
+            setTimeout(() => {
+                if (!document.hasFocus()) {
+                    remoteConnected = false;
+                }
+            }, 500);
+        });
+        
+        // Get all movie cards
+        updateMovieCardsList();
+        
+        // Re-fetch movie cards when DOM changes
+        const observer = new MutationObserver(() => {
+            updateMovieCardsList();
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    // Update movie cards list
+    function updateMovieCardsList() {
+        allMovieCards = document.querySelectorAll('.movie-card, .float-card-1, .float-card-2, .float-card-3, .float-card-4, .float-card-5, .float-card-6');
+    }
+    // Handle remote commands on main page
+    function handleMainPageRemoteCommand(payload) {
+        const { command, type, mediaType } = payload;
+        console.log('📡 Remote command received:', payload);
+        
+        // Handle new control panel style remote
+        if (payload.type === 'open_media') {
+            console.log('📺 Opening media from remote:', payload.title);
+            openMovieModal(payload, payload.mediaType);
+            return;
+        }
+        
+        // Handle old D-pad remote commands
+        switch(command) {
+            case 'navigate':
+                handleMainNavigation(data.direction);
+                break;
+                
+            case 'select':
+                handleMainSelect();
+                break;
+                
+            case 'volume':
+                handleMainVolume(data.level);
+                break;
+                
+            case 'brightness':
+                handleMainBrightness(data.level);
+                break;
+                
+            default:
+                console.log('Unknown command:', command);
+        }
+    }
+
+    // Navigation through movies
+    function handleMainNavigation(direction) {
+        updateMovieCardsList();
+        
+        if (allMovieCards.length === 0) {
+            // Fallback to page scroll if no cards
+            if (direction === 'down') {
+                window.scrollBy({ top: 200, behavior: 'smooth' });
+            } else if (direction === 'up') {
+                window.scrollBy({ top: -200, behavior: 'smooth' });
+            }
+            return;
+        }
+        
+        // Clear previous selection
+        if (selectedMovieIndex >= 0 && selectedMovieIndex < allMovieCards.length) {
+            allMovieCards[selectedMovieIndex].style.outline = 'none';
+        }
+        
+        if (direction === 'down' || direction === 'right') {
+            selectedMovieIndex++;
+            if (selectedMovieIndex >= allMovieCards.length) {
+                selectedMovieIndex = 0;
+            }
+        } else if (direction === 'up' || direction === 'left') {
+            selectedMovieIndex--;
+            if (selectedMovieIndex < 0) {
+                selectedMovieIndex = allMovieCards.length - 1;
+            }
+        }
+        
+        // Highlight selected card
+        if (selectedMovieIndex >= 0 && selectedMovieIndex < allMovieCards.length) {
+            const card = allMovieCards[selectedMovieIndex];
+            card.style.outline = '3px solid rgba(255, 255, 255, 0.8)';
+            card.style.outlineOffset = '4px';
+            card.style.borderRadius = '8px';
+            card.style.transition = 'outline 0.3s ease';
+            
+            // Scroll into view
+            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            
+            showRemoteFeedback(`📍 Selected`);
+        }
+    }
+
+    // Select on main page - click selected movie
+    function handleMainSelect() {
+        console.log('✓ Select');
+        
+        if (selectedMovieIndex >= 0 && selectedMovieIndex < allMovieCards.length) {
+            const card = allMovieCards[selectedMovieIndex];
+            const playBtn = card.querySelector('.play-btn');
+            
+            if (playBtn) {
+                playBtn.click();
+                showRemoteFeedback('▶ Opening...');
+            } else {
+                card.click();
+                showRemoteFeedback('✓ Clicked');
+            }
+        }
+    }
+
+    // Volume control on main page
+    function handleMainVolume(level) {
+        console.log(`🔊 Volume: ${level}%`);
+        showRemoteFeedback(`🔊 Volume: ${level}%`);
+    }
+
+    // Brightness control on main page
+    function handleMainBrightness(level) {
+        console.log(`💡 Brightness: ${level}%`);
+        document.body.style.filter = `brightness(${level / 100})`;
+        showRemoteFeedback(`💡 Brightness: ${level}%`);
+    }
+
+    // Show temporary feedback on screen
+    function showRemoteFeedback(message) {
+        const existing = document.getElementById('remoteFeedback');
+        if (existing) {
+            existing.remove();
+        }
+        
+        const feedback = document.createElement('div');
+        feedback.id = 'remoteFeedback';
+        feedback.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: #ffffff;
+            padding: 20px 40px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            z-index: 10000;
+            pointer-events: none;
+            animation: fadeInOut 0.8s ease-in-out;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+        `;
+        feedback.textContent = message;
+
+        document.body.appendChild(feedback);
+
+        setTimeout(() => {
+            feedback.remove();
+        }, 800);
+    }
+
+    // Add pulse animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Initialize when page loads
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeMainPageRemote);
+    } else {
+        initializeMainPageRemote();
+    }
+    
+</script>
+
+</body>
+</html>
+
+
+
