@@ -1100,11 +1100,13 @@
 
     let currentPage = 1;
     let isLoading = false;
+    const API_BASE_URL = 'https://api.themoviedb.org/3';
+    const TMDB_API_KEY = '9f3a94034c696a33133c40385d030817';
 
     async function loadAllMovies() {
-        const data = await fetchAPI('/movies/trending?page=1');
-        if (data && data.success) {
-            displayMovies(data.data.results);
+        const data = await fetchAPI('/movie/popular?page=1');
+        if (data && data.results) {
+            displayMovies(data.results);
             currentPage = 1;
         }
     }
@@ -1123,9 +1125,9 @@
         const loadingIndicator = document.getElementById('loadingIndicator');
         if (loadingIndicator) loadingIndicator.style.display = 'block';
 
-        const data = await fetchAPI(`/movies/trending?page=${currentPage}`);
-        if (data && data.success) {
-            appendMovies(data.data.results);
+        const data = await fetchAPI(`/movie/popular?page=${currentPage}`);
+        if (data && data.results) {
+            appendMovies(data.results);
         }
 
         if (loadingIndicator) loadingIndicator.style.display = 'none';
@@ -1134,7 +1136,8 @@
 
     async function fetchAPI(endpoint) {
         try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`);
+            const url = `${API_BASE_URL}${endpoint}&api_key=${TMDB_API_KEY}`;
+            const response = await fetch(url);
             if (!response.ok) throw new Error('API Error');
             return await response.json();
         } catch (error) {

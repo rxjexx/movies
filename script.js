@@ -37,13 +37,13 @@ async function loadPageData() {
         // Cache the popular movies for floating cards
         if (trendingData && trendingData.results) {
             cachedPopularMovies = trendingData.results;
-            displayMovies(cachedPopularMovies, 'movies');
-            displayFloatingCards(cachedPopularMovies.slice(0, 6));
+            displayMoviesCarousel(cachedPopularMovies, 'movies');
+            initializeFloatingCardRotation(cachedPopularMovies);
         }
         
         // Display shows
         if (showsData && showsData.results) {
-            displayShows(showsData.results, 'tv');
+            displayMoviesCarousel(showsData.results, 'tv');
         }
     } catch (error) {
         console.error('Error loading page data:', error);
@@ -210,6 +210,151 @@ function createFloatingCard(item, type, index) {
     });
 
     return card;
+}
+
+
+// Carousel display with smaller cards and hover scrolling
+function displayMoviesCarousel(items, section) {
+    console.log('Displaying carousel:', section, 'Count:', items ? items.length : 0);
+    
+    const sectionElement = document.getElementById(section);
+    if (!sectionElement) {
+        console.warn('Section not found:', section);
+        return;
+    }
+
+    const gridElement = sectionElement.querySelector('.movie-grid');
+    if (!gridElement) {
+        console.warn('Grid element not found in section:', section);
+        return;
+    }
+
+    gridElement.innerHTML = '';
+    gridElement.style.display = 'flex';
+    gridElement.style.overflowX = 'auto';
+    gridElement.style.gap = '1rem';
+    gridElement.style.paddingBottom = '1rem';
+    gridElement.style.scrollBehavior = 'smooth';
+    gridElement.style.scrollbarWidth = 'none';
+    
+    // Add hover scrolling
+    let isScrolling = false;
+    gridElement.addEventListener('mouseenter', () => {
+        isScrolling = true;
+        const scrollAmount = 5;
+        const scrollInterval = setInterval(() => {
+            if (!isScrolling) {
+                clearInterval(scrollInterval);
+                return;
+            }
+            gridElement.scrollLeft += scrollAmount;
+            if (gridElement.scrollLeft >= gridElement.scrollWidth - gridElement.clientWidth) {
+                gridElement.scrollLeft = 0;
+            }
+        }, 50);
+    });
+    
+    gridElement.addEventListener('mouseleave', () => {
+        isScrolling = false;
+    });
+
+    if (!items || items.length === 0) {
+        gridElement.innerHTML = '<p style="color: #999;">No items found</p>';
+        return;
+    }
+
+    items.forEach((item, index) => {
+        try {
+            const card = createCarouselCard(item, section === 'tv' ? 'show' : 'movie');
+            gridElement.appendChild(card);
+        } catch (error) {
+            console.error('Error creating card for item', index, error);
+        }
+    });
+}
+
+function createCarouselCard(item, type) {
+    const card = document.createElement('div');
+    card.style.cssText = `
+        flex: 0 0 120px;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+        position: relative;
+        border-radius: 0.5rem;
+        overflow: hidden;
+    `;
+    
+    const posterPath = item.poster_path ? `https://image.tmdb.org/t/p/w300${item.poster_path}` : 'https://via.placeholder.com/120x180?text=No+Image';
+    const title = item.title || item.name;
+
+    card.innerHTML = `
+        <div style="position: relative; width: 100%; height: 180px; border-radius: 0.5rem; overflow: hidden; background: #18181b;">
+            <img src="${posterPath}" alt="${title}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.9; transition: transform 0.3s ease;" onerror="this.src='https://via.placeholder.com/120x180?text=No+Image'">
+            <div style="position: absolute; inset: 0; background: linear-gradient(to top right, rgba(0,0,0,0.4), transparent); opacity: 0; transition: opacity 0.3s ease; display: flex; align-items: center; justify-content: center;" class="card-overlay">
+                <button style="width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.4); color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <svg viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px; margin-left: 2px;">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    `;
+
+    const img = card.querySelector('img');
+    const overlay = card.querySelector('.card-overlay');
+    const button = card.querySelector('button');
+
+    card.addEventListener('mouseenter', () => {
+        card.style.transform = 'scale(1.1)';
+        if (img) img.style.transform = 'scale(1.1)';
+        if (overlay) overlay.style.opacity = '1';
+    });
+
+    card.addEventListener('mouseleave', () => {
+        card.style.transform = 'scale(1)';
+        if (img) img.style.transform = 'scale(1)';
+        if (overlay) overlay.style.opacity = '0';
+    });
+
+    if (button) {
+        button.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openMovieModal(item, type);
+        });
+    }
+
+    card.addEventListener('click', () => {
+        openMovieModal(item, type);
+    });
+
+    return card;
+}
+
+// Rotating floating cards
+let floatingCardIndex = 0;
+let floatingCardRotationInterval = null;
+
+function initializeFloatingCardRotation(movies) {
+    if (!movies || movies.length === 0) return;
+    
+    const container = document.getElementById('floatingCardsContainer');
+    if (!container) return;
+
+    // Initial display
+    displayFloatingCards(movies.slice(0, 6));
+
+    // Rotate every 5 seconds
+    if (floatingCardRotationInterval) {
+        clearInterval(floatingCardRotationInterval);
+    }
+
+    floatingCardRotationInterval = setInterval(() => {
+        floatingCardIndex = (floatingCardIndex + 1) % Math.max(1, movies.length - 5);
+        const nextSet = movies.slice(floatingCardIndex, floatingCardIndex + 6);
+        if (nextSet.length === 6) {
+            displayFloatingCards(nextSet);
+        }
+    }, 5000);
 }
 
 function displayMovies(movies, section) {

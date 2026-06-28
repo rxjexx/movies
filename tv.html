@@ -1101,11 +1101,13 @@
 
     let currentPage = 1;
     let isLoading = false;
+    const API_BASE_URL = 'https://api.themoviedb.org/3';
+    const TMDB_API_KEY = '9f3a94034c696a33133c40385d030817';
 
     async function loadAllShows() {
-        const data = await fetchAPI('/shows/popular?page=1');
-        if (data && data.success) {
-            displayShows(data.data.results);
+        const data = await fetchAPI('/tv/popular?page=1');
+        if (data && data.results) {
+            displayShows(data.results);
             currentPage = 1;
         }
     }
@@ -1124,9 +1126,9 @@
         const loadingIndicator = document.getElementById('tvGrid').parentElement.querySelector('#loadingIndicator') || createLoadingIndicator();
         loadingIndicator.style.display = 'block';
 
-        const data = await fetchAPI(`/shows/popular?page=${currentPage}`);
-        if (data && data.success) {
-            appendShows(data.data.results);
+        const data = await fetchAPI(`/tv/popular?page=${currentPage}`);
+        if (data && data.results) {
+            appendShows(data.results);
         }
 
         loadingIndicator.style.display = 'none';
@@ -1144,7 +1146,8 @@
 
     async function fetchAPI(endpoint) {
         try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`);
+            const url = `${API_BASE_URL}${endpoint}&api_key=${TMDB_API_KEY}`;
+            const response = await fetch(url);
             if (!response.ok) throw new Error('API Error');
             return await response.json();
         } catch (error) {
