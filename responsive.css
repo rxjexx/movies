@@ -50,116 +50,116 @@
     }
     
     .navbar {
-        padding: var(--space-sm) 0;
+        padding: var(--space-xs) 0;
     }
     
     .nav-container {
-        padding: 0 var(--space-md);
+        padding: 0 var(--space-sm);
         flex-wrap: wrap;
-        gap: var(--space-md);
+        gap: var(--space-sm);
     }
     
     .nav-logo h1 {
-        font-size: clamp(1.2rem, 5vw, 1.8rem);
+        font-size: clamp(1rem, 4vw, 1.6rem);
     }
     
     .nav-menu {
-        gap: var(--space-sm);
-        font-size: clamp(0.7rem, 2vw, 0.9rem);
+        gap: var(--space-xs);
+        font-size: clamp(0.65rem, 1.8vw, 0.8rem);
     }
     
     .search-box {
         width: 100%;
-        max-width: 250px;
-        padding: var(--space-sm) var(--space-md);
+        max-width: 200px;
+        padding: var(--space-xs) var(--space-sm);
     }
     
     .search-box input {
         width: 100%;
-        max-width: 150px;
+        max-width: 120px;
     }
     
     .hero {
-        margin-top: 70px;
-        height: clamp(300px, 60vh, 500px);
-        padding: var(--space-lg) var(--space-md);
+        margin-top: 60px;
+        height: clamp(250px, 50vh, 400px);
+        padding: var(--space-md) var(--space-sm);
     }
     
     .hero-content {
         max-width: 90%;
-        padding: 0 var(--space-md);
+        padding: 0 var(--space-sm);
     }
     
     .hero-title {
-        font-size: clamp(1.8rem, 6vw, 3rem);
+        font-size: clamp(1.5rem, 5vw, 2.5rem);
         line-height: 1.1;
     }
     
     .hero-description {
-        font-size: var(--font-sm);
+        font-size: var(--font-xs);
         max-width: 100%;
     }
     
     .hero-buttons {
         flex-direction: column;
-        gap: var(--space-md);
+        gap: var(--space-sm);
         width: 100%;
     }
     
     .btn {
         width: 100%;
-        padding: var(--space-md) var(--space-lg);
-        font-size: var(--font-sm);
+        padding: var(--space-sm) var(--space-md);
+        font-size: var(--font-xs);
     }
     
     .section {
-        padding: var(--space-lg) var(--space-md);
+        padding: var(--space-md) var(--space-sm);
     }
     
     .section-title {
-        font-size: clamp(1.5rem, 4vw, 2.5rem);
-        margin-bottom: var(--space-lg);
+        font-size: clamp(1.2rem, 3vw, 2rem);
+        margin-bottom: var(--space-md);
     }
     
     .movie-grid {
-        gap: var(--space-md);
-        padding-bottom: var(--space-md);
-        padding-left: var(--space-md);
-        padding-right: var(--space-md);
+        gap: var(--space-sm);
+        padding-bottom: var(--space-sm);
+        padding-left: var(--space-sm);
+        padding-right: var(--space-sm);
     }
     
     .movie-card {
-        width: clamp(120px, 40vw, 160px);
+        width: clamp(90px, 35vw, 130px);
         flex-shrink: 0;
     }
     
     .movie-title {
-        font-size: clamp(0.85rem, 2vw, 1rem);
+        font-size: clamp(0.7rem, 1.8vw, 0.85rem);
     }
     
     .movie-meta {
-        font-size: clamp(0.7rem, 1.5vw, 0.85rem);
+        font-size: clamp(0.6rem, 1.3vw, 0.75rem);
     }
     
     .modal-content {
         flex-direction: column;
-        gap: var(--space-lg);
-        padding: var(--space-lg);
+        gap: var(--space-md);
+        padding: var(--space-md);
     }
     
     .modal-card {
         width: 95%;
         max-height: 95vh;
-        max-width: calc(100vw - 2rem);
+        max-width: calc(100vw - 1rem);
     }
     
     .modal-poster {
         flex: 0 0 100%;
-        min-height: 300px;
+        min-height: 250px;
     }
     
     .modal-title {
-        font-size: clamp(1.5rem, 4vw, 2rem);
+        font-size: clamp(1.2rem, 3vw, 1.6rem);
     }
 }
 
@@ -170,15 +170,15 @@
     }
     
     .nav-menu {
-        gap: var(--space-md);
+        gap: var(--space-sm);
     }
     
     .hero {
-        height: clamp(350px, 65vh, 550px);
+        height: clamp(280px, 55vh, 450px);
     }
     
     .hero-title {
-        font-size: clamp(2rem, 6vw, 3.2rem);
+        font-size: clamp(1.6rem, 5vw, 2.8rem);
     }
     
     .hero-buttons {
@@ -188,15 +188,15 @@
     
     .btn {
         width: auto;
-        padding: var(--space-md) var(--space-xl);
+        padding: var(--space-sm) var(--space-md);
     }
     
     .movie-card {
-        width: clamp(140px, 35vw, 180px);
+        width: clamp(110px, 30vw, 150px);
     }
     
     .movie-grid {
-        gap: var(--space-lg);
+        gap: var(--space-sm);
     }
 }
 
@@ -392,15 +392,15 @@
 /* Portrait Orientation (Mobile/Tablet) */
 @media (orientation: portrait) and (max-width: 768px) {
     .hero {
-        height: clamp(300px, 50vh, 450px);
+        height: clamp(220px, 40vh, 380px);
     }
     
     .hero-content {
-        padding-left: var(--space-md);
+        padding-left: var(--space-xs);
     }
     
     .movie-card {
-        width: clamp(100px, 45vw, 150px);
+        width: clamp(80px, 40vw, 130px);
     }
 }
 
@@ -446,8 +446,8 @@
 
 @media (max-width: 480px) {
     .grid-auto {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: var(--space-md);
+        grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+        gap: var(--space-sm);
     }
 }
 

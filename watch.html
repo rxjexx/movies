@@ -13,6 +13,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="storage.js"></script>
+    <script src="server-manager.js"></script>
     <script src="responsive-detector.js"></script>
     <style>
         @keyframes animationIn {
@@ -194,14 +195,210 @@
             @apply opacity-50 cursor-not-allowed;
         }
 
-        /* Video Player Interactivity */
-        #videoPlayer {
-            pointer-events: auto !important;
-            z-index: 10;
+        /* Premium Glass Select styling */
+        .custom-dropdown-item {
+            padding: 0.75rem 1rem;
+            color: #e4e4e7;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-weight: 500;
+        }
+        
+        .custom-dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+        }
+        
+        .custom-dropdown-item.selected {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
+            color: #ffffff;
+            font-weight: 600;
+            border-left: 3px solid rgba(255, 255, 255, 0.4);
+            padding-left: calc(1rem - 3px);
+        }
+        
+        .custom-dropdown-item:last-child {
+            border-bottom: none;
+        }
+        
+        #seasonBtn:hover, #episodeBtn:hover {
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+            background: rgba(255, 255, 255, 0.08) !important;
+            box-shadow: 0 8px 32px rgba(255, 255, 255, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.25), inset 0 -1px 1px rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        #seasonBtn:focus, #episodeBtn:focus {
+            outline: none;
+            border: 1px solid rgba(255, 255, 255, 0.35) !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 8px 32px rgba(255, 255, 255, 0.15), 0 0 20px rgba(255, 255, 255, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.3), inset 0 -1px 1px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        /* Glass Dropdown Container */
+        .glass-dropdown {
+            background: rgba(10, 10, 14, 0.85);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+
+        .glass-dropdown.hidden {
+            display: none !important;
+        }
+
+        /* Episode Grid Thumbnail Styling */
+        .episode-thumbnail {
             position: relative;
-            display: block;
+            aspect-ratio: 16/9;
+            overflow: hidden;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .episode-thumbnail:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+            box-shadow: 0 8px 24px rgba(255, 255, 255, 0.15);
+        }
+
+        .episode-thumbnail img {
             width: 100%;
             height: 100%;
+            object-fit: cover;
+            transition: filter 0.3s ease;
+        }
+
+        .episode-thumbnail:hover img {
+            filter: brightness(1.2);
+        }
+
+        .episode-info {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent 60%, rgba(0, 0, 0, 0.9));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 0.75rem;
+            z-index: 10;
+        }
+
+        .episode-thumbnail:hover .episode-info {
+            opacity: 1;
+        }
+
+        .episode-number {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .episode-name {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-top: 0.25rem;
+            line-height: 1.2;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            max-height: 2.4em;
+            transition: all 0.3s ease;
+        }
+
+        .episode-thumbnail:hover .episode-name {
+            -webkit-line-clamp: unset;
+            max-height: none;
+            overflow: visible;
+            white-space: normal;
+        }
+
+        .episode-thumbnail.selected {
+            border-color: rgba(255, 255, 255, 0.9);
+            border-width: 2.5px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.6), inset 0 0 12px rgba(255, 255, 255, 0.2), 0 0 30px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 640px) {
+            #episodesGrid {
+                display: flex !important;
+                flex-direction: row;
+                overflow-x: auto;
+                overflow-y: hidden;
+                gap: 0.5rem !important;
+                padding-bottom: 0.5rem;
+                scroll-behavior: smooth;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+            }
+
+            #episodesGrid::-webkit-scrollbar {
+                display: none;
+            }
+
+            .episode-thumbnail {
+                flex: 0 0 100px;
+                width: 100px;
+                border-radius: 0.5rem;
+                border-width: 1.5px;
+            }
+
+            .episode-info {
+                padding: 0.5rem;
+            }
+
+            .episode-number {
+                font-size: 0.65rem;
+                line-height: 1.1;
+            }
+
+            .episode-name {
+                font-size: 0.75rem;
+                margin-top: 0.125rem;
+                -webkit-line-clamp: 1;
+            }
+        }
+
+        /* Tablet optimizations */
+        @media (min-width: 641px) and (max-width: 1024px) {
+            #episodesGrid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)) !important;
+                gap: 0.625rem !important;
+            }
+
+            .episode-info {
+                padding: 0.625rem;
+            }
+
+            .episode-number {
+                font-size: 0.7rem;
+            }
+
+            .episode-name {
+                font-size: 0.8rem;
+                margin-top: 0.2rem;
+            }
+        }
+
+        /* Desktop */
+        @media (min-width: 1025px) {
+            #episodesGrid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
+                gap: 0.75rem !important;
+            }
         }
 
         .player-loading {
@@ -219,6 +416,195 @@
 
         .flex.flex-col.gap-12 {
             pointer-events: auto !important;
+        }
+
+        #serverButtons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.75rem;
+        }
+
+        #serverButtons.hidden {
+            display: none !important;
+        }
+
+        #allServersList {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.75rem;
+        }
+
+        #allServersList.hidden {
+            display: none !important;
+        }
+
+        #showAllBtn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            letter-spacing: 0.025em;
+            transition: all 0.3s ease-out;
+            cursor: pointer;
+            border: 1px solid rgba(113, 113, 122, 0.5);
+            background: linear-gradient(135deg, rgb(39, 39, 42) 0%, rgb(24, 24, 27) 100%);
+            color: rgb(212, 212, 216);
+            outline: none;
+        }
+
+        #showAllBtn:hover {
+            background: linear-gradient(135deg, rgb(63, 63, 70) 0%, rgb(39, 39, 42) 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 36px rgba(255, 255, 255, 0.2);
+        }
+
+        #showAllBtn:active {
+            transform: translateY(0);
+        }
+
+        #showAllBtn:focus {
+            outline: none;
+        }
+
+        #showAllBtn:focus-visible {
+            outline: none;
+        }
+
+        /* Responsive Layout */
+        @media (max-width: 768px) {
+            #serverButtons {
+                grid-template-columns: 1fr;
+            }
+
+            #allServersList {
+                grid-template-columns: 1fr;
+            }
+
+            #serverButtons button,
+            #allServersList button {
+                padding: 0.875rem;
+                font-size: 0.8125rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #serverButtons {
+                grid-template-columns: 1fr;
+            }
+
+            #allServersList {
+                grid-template-columns: 1fr;
+            }
+
+            #serverButtons button,
+            #allServersList button {
+                padding: 0.75rem;
+                font-size: 0.75rem;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            #serverButtons button span:last-child,
+            #allServersList button span:last-child {
+                margin-top: 0.5rem;
+            }
+
+            #showAllBtn {
+                padding: 0.625rem 0.875rem;
+                font-size: 0.75rem;
+            }
+        }
+
+        /* Tablet Layout */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            #serverButtons {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            #allServersList {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Desktop Layout */
+        @media (min-width: 1025px) {
+            #serverButtons {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            #allServersList {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* Glass Card Responsive */
+        .glass-card {
+            width: 100%;
+            padding: 1.25rem;
+        }
+
+        @media (max-width: 768px) {
+            .glass-card {
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .glass-card {
+                padding: 0.875rem;
+            }
+        }
+
+        /* Server Selector Container */
+        #serverButtons,
+        #allServersList {
+            width: 100%;
+        }
+
+        #serverButtons button {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            letter-spacing: 0.025em;
+            transition: all 0.3s ease-out;
+            cursor: pointer;
+            border: 1px solid rgba(113, 113, 122, 0.5);
+            background: linear-gradient(135deg, rgb(39, 39, 42) 0%, rgb(24, 24, 27) 100%);
+            color: rgb(212, 212, 216);
+            outline: none;
+        }
+
+        #serverButtons button:focus {
+            outline: none;
+        }
+
+        #serverButtons button:focus-visible {
+            outline: none;
+        }
+
+        #serverButtons button.selected {
+            border-color: rgba(255, 255, 255, 0.8);
+            background: linear-gradient(135deg, rgba(63, 63, 70, 0.5) 0%, rgba(39, 39, 42, 0.5) 100%);
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+        }
+
+        #serverButtons button:hover {
+            background: linear-gradient(135deg, rgb(63, 63, 70) 0%, rgb(39, 39, 42) 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 36px rgba(255, 255, 255, 0.2);
+        }
+
+        #serverButtons button:active {
+            transform: translateY(0);
         }
     </style>
     <script>
@@ -302,12 +688,20 @@
                     <div class="absolute inset-0 bg-gradient-to-br from-zinc-900 via-black to-zinc-900 flex items-center justify-center flex-col gap-4">
                         <div class="loading-spinner"></div>
                         <div class="flex flex-col items-center gap-2">
-                            <p class="text-white font-medium" id="serverStatus">Connecting to server...</p>
-                            <p class="text-zinc-400 text-sm" id="loadingSubtext">Preparing your stream</p>
+                            <p class="text-white font-medium" id="serverStatus">Select a Server</p>
+                            <p class="text-zinc-400 text-sm" id="loadingSubtext">Choose a streaming provider above</p>
                         </div>
                     </div>
                 </div>
-                <iframe id="videoPlayer" class="w-full h-full" frameborder="0" allowfullscreen allow="fullscreen; accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" style="pointer-events: auto; z-index: 10; position: relative;"></iframe>
+                <iframe 
+                    id="videoPlayer" 
+                    class="w-full h-full" 
+                    frameborder="0" 
+                    allowfullscreen 
+                    allow="fullscreen; accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerpolicy="no-referrer"
+                    style="pointer-events: auto; z-index: 10; position: relative;">
+                </iframe>
             </div>
             <div class="glass-highlight" style="pointer-events: none;"></div>
         </div>
@@ -319,7 +713,15 @@
                     <iconify-icon icon="solar:server-linear" class="w-5 h-5 text-zinc-400" style="stroke-width: 1.5;"></iconify-icon>
                     <span class="text-sm font-medium text-zinc-300">Select Streaming Server</span>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" id="serverButtons"></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 hidden" id="serverButtons" style="display: none;"></div>
+                
+                <!-- Show All Button -->
+                <button onclick="toggleShowAllServers()" id="showAllBtn" class="w-full mt-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 border border-zinc-700/50 bg-gradient-to-br from-zinc-800 to-zinc-900 text-zinc-300 hover:text-white hover:bg-gradient-to-br hover:from-zinc-700 hover:to-zinc-800 hover:-translate-y-1 hover:shadow-lg outline-none">
+                    Show All Servers (4)
+                </button>
+
+                <!-- All Servers List (Hidden by default) -->
+                <div id="allServersList" class="hidden mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
             </div>
         </div>
 
@@ -338,9 +740,47 @@
                         <span class="text-sm" id="watchType">Movie</span>
                     </div>
                     <div class="flex items-center gap-1.5">
-                        <iconify-icon icon="solar:star-linear" class="w-4 h-4 text-white" style="stroke-width: 1.5;"></iconify-icon>
                         <span class="text-sm" id="watchRating">8.5/10</span>
                     </div>
+                </div>
+            </div>
+
+            <!-- TV Show Season/Episode Selector -->
+            <div id="tvSelector" class="hidden glass-card p-3 md:p-5 lg:p-6 space-y-3 md:space-y-4 [animation:animationIn_0.8s_ease-out_0.5s_both]">
+                <div class="flex items-center gap-2 mb-2">
+                    <iconify-icon icon="solar:play-circle-linear" class="w-5 h-5 text-zinc-400" style="stroke-width: 1.5;"></iconify-icon>
+                    <span class="text-sm font-medium text-zinc-300 uppercase tracking-wider">Episodes</span>
+                </div>
+                
+                <!-- Season Dropdown -->
+                <div class="mb-4">
+                    <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wider mb-2">Season</label>
+                    <div class="relative w-full" style="max-width: 280px;">
+                        <button id="seasonBtn" class="w-full rounded-lg px-3 py-2.5 text-sm text-zinc-200 transition duration-300 cursor-pointer font-medium text-left flex items-center justify-between" style="background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.18); box-shadow: 0 8px 32px rgba(255, 255, 255, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.25), inset 0 -1px 1px rgba(0, 0, 0, 0.3);">
+                            <span id="seasonBtnText">Select Season</span>
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="color: #ffffff; transition: transform 0.3s;"><path d="M8 11L2 5h12z" fill="currentColor"/></svg>
+                        </button>
+                        <div id="seasonDropdown" class="hidden glass-dropdown absolute top-full left-0 right-0 mt-2 z-50">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Episodes Grid with Scroll Controls -->
+                <div class="relative">
+                    <!-- Left Scroll Button (Mobile) -->
+                    <button id="scrollLeftBtn" class="absolute left-0 top-1/2 -translate-y-1/2 z-40 hidden md:hidden bg-black/60 hover:bg-black/80 text-white p-1.5 rounded-full transition" style="width: 28px; height: 28px; display: none;">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                    
+                    <!-- Episodes Grid -->
+                    <div id="episodesGrid" class="grid gap-3 w-full overflow-x-auto scroll-smooth">
+                        <!-- Episodes will be populated here -->
+                    </div>
+                    
+                    <!-- Right Scroll Button (Mobile) -->
+                    <button id="scrollRightBtn" class="absolute right-0 top-1/2 -translate-y-1/2 z-40 hidden md:hidden bg-black/60 hover:bg-black/80 text-white p-1.5 rounded-full transition" style="width: 28px; height: 28px; display: none;">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 12l4-4-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
                 </div>
             </div>
 
@@ -393,6 +833,42 @@
 
     console.log('Watch Page initialized - ID:', movieId, 'Type:', mediaType, 'Title:', title);
 
+    // Store library item info if found
+    let libraryItem = null;
+
+    // Check if this movie is in the library and get its streaming URL
+    async function checkLibrary() {
+        try {
+            // First try by IMDB ID if available
+            if (movieId && movieId.startsWith('tt')) {
+                const response = await fetch(`http://localhost:5000/api/library/${movieId}`);
+                if (response.ok) {
+                    libraryItem = await response.json();
+                    console.log('✅ Found in library by IMDB ID:', libraryItem);
+                    return true;
+                }
+            }
+            
+            // If not IMDB ID format, try to get stream URL from TMDb ID
+            if (movieId && !movieId.startsWith('tt')) {
+                const response = await fetch(`http://localhost:5000/api/library/tmdb/${movieId}/stream?type=${mediaType}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    libraryItem = {
+                        imdbId: data.imdbId,
+                        sourceUrl: data.streamUrl,
+                        title: title || 'Unknown'
+                    };
+                    console.log('✅ Got stream URL from TMDb ID:', libraryItem);
+                    return true;
+                }
+            }
+        } catch (error) {
+            console.log('Error checking library:', error.message);
+        }
+        return false;
+    }
+
     // Validate required parameters
     if (!movieId) {
         document.getElementById('serverStatus').textContent = 'Error: No movie ID provided';
@@ -412,169 +888,305 @@
     // Fetch streams from backend with retry logic
     async function fetchStreams() {
         try {
-            console.log('Fetching streams for:', mediaType, 'ID:', movieId);
+            console.log('Initializing Server Manager for streaming');
             
-            // Build URLs based on media type
-            const urlPath = mediaType === 'show' ? 'tv' : 'movie';
-            
-            // Build streaming server URLs directly - no backend needed
-            const streams = [
-                {
-                    name: 'VidSrc.mov',
-                    url: `https://vidsrc.mov/embed/${urlPath}/${movieId}`,
-                    type: 'iframe',
-                    quality: '1080p',
-                    status: 'Primary - 100% Reliable'
-                },
-                {
-                    name: 'VidSrc.pro',
-                    url: `https://vidsrc.pro/embed/${urlPath}/${movieId}`,
-                    type: 'iframe',
-                    quality: '1080p/4K',
-                    status: 'Ultra Reliable'
-                },
-                {
-                    name: 'MultiEmbed',
-                    url: `https://multiembed.mov/embed/${urlPath}/${movieId}`,
-                    type: 'iframe',
-                    quality: '1080p',
-                    status: 'Fast Loading'
-                },
-                {
-                    name: 'DbGo',
-                    url: `https://dbgo.fun/embed/${urlPath}/${movieId}`,
-                    type: 'iframe',
-                    quality: '720p-1080p',
-                    status: 'Stable Streaming'
-                },
-                {
-                    name: 'AutoEmbed',
-                    url: mediaType === 'show' 
-                        ? `https://autoembed.co/tv/id/${movieId}`
-                        : `https://autoembed.co/movie/id/${movieId}`,
-                    type: 'iframe',
-                    quality: '720p-1080p',
-                    status: 'Auto-Sourced - Fast'
-                },
-                {
-                    name: 'VidSrc.lol',
-                    url: `https://vidsrc.lol/embed/${urlPath}/${movieId}`,
-                    type: 'iframe',
-                    quality: '1080p/4K',
-                    status: 'Backup - Reliable'
-                },
-                {
-                    name: 'Embed.su',
-                    url: `https://embed.su/embed/${urlPath}/${movieId}`,
-                    type: 'iframe',
-                    quality: '720p-1080p',
-                    status: 'Dependable'
-                },
-                {
-                    name: 'FlixHQ',
-                    url: `https://flixhq.top/embed/${urlPath}/${movieId}`,
-                    type: 'iframe',
-                    quality: '1080p',
-                    status: 'Quality Streaming'
-                },
-                {
-                    name: 'HiAnime',
-                    url: `https://hianime.to/embed/${urlPath}/${movieId}`,
-                    type: 'iframe',
-                    quality: '720p-1080p',
-                    status: 'High Speed'
-                },
-                {
-                    name: 'Moonstream',
-                    url: `https://moonstream.to/embed/${urlPath}/${movieId}`,
-                    type: 'iframe',
-                    quality: '1080p',
-                    status: 'Smooth Playback'
-                }
-            ];
-            
-            currentStreams = streams;
-            console.log('Loaded', currentStreams.length, 'streams');
-            initializeServers();
+            // Call initializeAllServers instead of fetchStreams
+            if (typeof initializeAllServers === 'function') {
+                initializeAllServers();
+            }
         } catch (error) {
             console.error('Error setting up streams:', error);
             showErrorMessage('Error setting up streaming servers.');
         }
     }
 
-    // Initialize server buttons
-    function initializeServers() {
-        console.log('Initializing', currentStreams.length, 'servers');
-        serverButtons.innerHTML = '';
+    /**
+     * Initialize server manager UI
+     */
+    function initializeServerManager() {
+        console.log('Initializing Server Manager UI');
         
-        if (!currentStreams || currentStreams.length === 0) {
-            showErrorMessage('No streaming servers available');
-            return;
+        // Populate server buttons with grid view
+        populateServerButtons();
+
+        // Update server count
+        document.getElementById('totalServers') && (document.getElementById('totalServers').textContent = serverManager.getAllServers().length);
+        
+        // Listen for server status changes
+        document.addEventListener('serverStatusChanged', (event) => {
+            const { serverId, status } = event.detail;
+            console.log(`Server ${serverId} status: ${status}`);
+            updateServerButtonStatus(serverId, status);
+        });
+    }
+
+    /**
+     * Populate server buttons in grid view
+     */
+    function populateServerButtons() {
+        const container = document.getElementById('serverButtons');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        container.classList.add('hidden');
+        container.style.display = 'none';
+
+        // Don't show servers by default - only show when "Show All Servers" is clicked
+        // The toggle will call populateAllServers() which populates both grids
+    }
+
+    /**
+     * Create a server button element
+     */
+    function createServerButton(server, hideStatus = false) {
+        const btn = document.createElement('button');
+        const isBackend = server.type === 'backend';
+        const isOnline = server.status === 'online';
+        
+        btn.className = 'px-4 py-3 rounded-lg font-semibold text-sm tracking-tight transition-all duration-300 ease-out cursor-pointer inline-flex items-center justify-center gap-2 relative overflow-hidden bg-gradient-to-br from-zinc-800 to-zinc-900 border border-zinc-700/50 text-zinc-300 hover:text-white hover:bg-gradient-to-br hover:from-zinc-700 hover:to-zinc-800 hover:-translate-y-1 hover:shadow-lg w-full';
+        btn.dataset.serverId = server.id;
+        btn.title = server.description;
+        
+        const statusColor = isBackend 
+            ? (isOnline ? 'bg-green-500' : 'bg-red-500')
+            : 'bg-blue-500';
+        
+        // Build status dot HTML - hide if hideStatus is true
+        const statusDot = hideStatus ? '' : `<span class="w-2 h-2 rounded-full ${statusColor}" style="flex-shrink: 0;"></span>`;
+        
+        // Add maintenance badge if applicable
+        const maintenanceBadge = server.maintenance ? '<span style="font-size: 0.7rem; background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.05) 100%); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.25); color: #ffffff; padding: 0.4rem 0.75rem; border-radius: 8px; margin-left: auto; white-space: nowrap; box-shadow: 0 8px 32px rgba(255, 255, 255, 0.1), inset 0 1px 2px rgba(255, 255, 255, 0.2), inset 0 -1px 2px rgba(0, 0, 0, 0.2), 0 0 20px rgba(255, 255, 255, 0.08); display: flex; align-items: center; gap: 0.4rem; font-weight: 600; letter-spacing: 0.05em;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color: #ffffff; flex-shrink: 0;"><circle cx="12" cy="12" r="1"></circle><path d="M12 1v6m0 6v6"></path><path d="M4.22 4.22l4.24 4.24m5.08 0l4.24-4.24"></path><path d="M19.78 4.22l-4.24 4.24m0 5.08l4.24 4.24"></path><path d="M19.78 19.78l-4.24-4.24m-5.08 0l-4.24 4.24"></path><path d="M4.22 19.78l4.24-4.24m0-5.08l-4.24-4.24"></path></svg>MAINTENANCE</span>' : '';
+        
+        btn.innerHTML = `
+            ${statusDot}
+            <span style="flex: 1; text-align: left;">
+                <div style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">${server.name}</div>
+                <div style="font-size: 0.75rem; color: rgba(255,255,255,0.6);">${server.provider}</div>
+            </span>
+            <span style="font-size: 0.75rem; opacity: 0.6; white-space: nowrap;">${server.quality}</span>
+            ${maintenanceBadge}
+        `;
+        
+        btn.onclick = () => selectServerFromManager(server.id);
+        
+        // Highlight if selected
+        if (serverManager && serverManager.selectedServer === server.id) {
+            btn.classList.add('selected');
         }
         
-        currentStreams.forEach((stream, index) => {
-            const btn = document.createElement('button');
-            btn.className = 'btn-standard btn-primary group relative inline-flex cursor-pointer transition-all duration-500 ease-out hover:-translate-y-1 font-normal text-sm tracking-tight bg-gradient-to-br from-zinc-800 to-zinc-900 border border-zinc-700/50 rounded-lg px-4 py-3 items-center justify-center gap-2 text-zinc-300 hover:text-white hover:bg-gradient-to-br hover:from-zinc-700 hover:to-zinc-800 overflow-hidden';
-            btn.innerHTML = `
-                <span class="flex items-center gap-2">
-                    <iconify-icon icon="solar:server-linear" class="w-4 h-4" style="stroke-width: 1.5;"></iconify-icon>
-                    <span>${stream.name}</span>
-                    <span class="text-xs opacity-60 font-normal">${stream.quality}</span>
-                </span>
-            `;
-            btn.title = stream.status;
-            btn.onclick = () => selectServer(stream, btn, index);
-            serverButtons.appendChild(btn);
-            console.log('Added server button:', stream.name);
+        return btn;
+    }
+
+    /**
+     * Update server button status
+     */
+    function updateServerButtonStatus(serverId, status) {
+        document.querySelectorAll(`[data-server-id="${serverId}"]`).forEach((el) => {
+            const dot = el.querySelector('.server-status-dot');
+            
+            if (dot) {
+                dot.classList.toggle('bg-green-500', status === 'online');
+                dot.classList.toggle('bg-red-500', status === 'offline');
+            }
+        });
+    }
+
+    /**
+     * Select server from manager
+     */
+    function selectServerFromManager(serverId) {
+        console.log('Selecting server:', serverId);
+        
+        const server = serverManager.getServer(serverId);
+        if (!server) {
+            console.error('Server not found:', serverId);
+            return;
+        }
+
+        // Update selection
+        serverManager.selectServer(serverId);
+
+        // Update UI - remove selected from all, add to current
+        document.querySelectorAll('#serverButtons button').forEach(btn => {
+            btn.classList.remove('selected');
+        });
+        
+        // Also update all servers list
+        document.querySelectorAll('#allServersList button').forEach(btn => {
+            btn.classList.remove('selected');
         });
 
-        // Select first server by default
-        if (currentStreams.length > 0) {
-            const firstBtn = serverButtons.querySelector('button');
-            if (firstBtn) {
-                console.log('Selecting first server by default');
-                selectServer(currentStreams[0], firstBtn, 0);
-            }
+        document.querySelector(`button[data-server-id="${serverId}"]`)?.classList.add('selected');
+
+        // Show selection feedback
+        serverStatus.textContent = `Connecting to ${server.name}...`;
+        loadingSubtext.textContent = `${server.description} • ${server.quality}`;
+        
+        // For TV shows with selected episode, load that episode
+        // For movies, load the movie stream
+        if (mediaType === 'show' && currentShowSelection.season && currentShowSelection.episode) {
+            console.log('Loading TV episode with new server');
+            loadStreamWithEpisode(currentShowSelection.season, currentShowSelection.episode);
+        } else {
+            // Load stream from this server (for movies)
+            loadStreamFromSelectedServer();
         }
     }
 
-    // Select and load a server
-    function selectServer(stream, buttonElement, index) {
-        console.log('Selecting server:', stream.name, 'URL:', stream.url);
+    // Store current selection for TV shows
+    async function loadStreamFromSelectedServer() {
+        const server = serverManager.getSelectedServer();
+        if (!server) {
+            console.error('No server selected');
+            return;
+        }
+
+        console.log('Selected server:', server.name, 'ID:', server.id);
         
-        // Show loading indicator
-        playerLoading.classList.remove('hidden');
-        serverStatus.textContent = `Connecting to ${stream.name}...`;
-        loadingSubtext.textContent = `${stream.status} • ${stream.quality} Quality`;
-
-        // Update button states
-        document.querySelectorAll('#serverButtons button').forEach(btn => {
-            btn.classList.remove('ring-2', 'ring-yellow-500');
-        });
-        buttonElement.classList.add('ring-2', 'ring-yellow-500');
-
-        // Load the stream
-        setTimeout(() => {
-            if (stream.type === 'iframe') {
-                loadIframeStream(stream.url, stream.name);
+        // ONLY use MultiEmbed for personal server
+        if (server.id === 'lumiere-local') {
+            console.log('Personal server selected - checking library for MultiEmbed');
+            
+            try {
+                // Try to get stream URL for personal server
+                if (movieId && movieId.startsWith('tt')) {
+                    const response = await fetch(`http://localhost:5000/api/library/${movieId}`);
+                    if (response.ok) {
+                        libraryItem = await response.json();
+                        console.log('✅ Found in library:', libraryItem);
+                    }
+                }
+                
+                if (!libraryItem && movieId && !movieId.startsWith('tt')) {
+                    const response = await fetch(`http://localhost:5000/api/library/tmdb/${movieId}/stream?type=${mediaType}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        libraryItem = {
+                            imdbId: data.imdbId,
+                            sourceUrl: `https://multiembed.mov/embed/${data.imdbId}`,
+                            title: title || 'Unknown'
+                        };
+                        console.log('✅ Got stream URL from TMDb:', libraryItem);
+                    }
+                }
+            } catch (error) {
+                console.warn('Could not get library item:', error.message);
             }
+
+            if (libraryItem && libraryItem.sourceUrl) {
+                console.log('Loading from MultiEmbed via personal server');
+                playerLoading.classList.remove('hidden');
+                
+                // Properly set iframe src with attributes
+                setTimeout(() => {
+                    videoPlayer.setAttribute('src', libraryItem.sourceUrl);
+                    videoPlayer.setAttribute('referrerpolicy', 'no-referrer');
+                    console.log('✅ Stream loaded from library');
+                    
+                    setTimeout(() => {
+                        playerLoading.classList.add('hidden');
+                        serverStatus.textContent = `Playing: ${libraryItem.title}`;
+                        loadingSubtext.textContent = 'Streaming from MultiEmbed';
+                    }, 2000);
+                }, 500);
+                return;
+            }
+        }
+
+        // For all other servers, use their native URL format
+        console.log('Using third-party server URL');
+        const streamUrl = serverManager.generateStreamUrl(movieId, mediaType, server.id);
+        if (!streamUrl) {
+            console.error('Could not generate stream URL for server:', server.name);
+            return;
+        }
+
+        console.log('Stream URL:', streamUrl);
+
+        // Show loading
+        playerLoading.classList.remove('hidden');
+        
+        // Load iframe with proper attributes
+        setTimeout(() => {
+            // Set iframe attributes instead of src to avoid premature loading
+            videoPlayer.setAttribute('src', streamUrl);
+            videoPlayer.setAttribute('referrerpolicy', 'no-referrer');
+            
+            console.log('✅ Stream loaded from:', server.name);
+            
+            // Hide loading after stream loads
+            setTimeout(() => {
+                playerLoading.classList.add('hidden');
+                serverStatus.textContent = `Playing from ${server.name}`;
+                loadingSubtext.textContent = 'Enjoy your stream!';
+            }, 2000);
         }, 500);
     }
 
-    // Load iframe stream - basic embed
-    function loadIframeStream(url, serverName) {
-        serverStatus.textContent = `Loading from ${serverName}...`;
+    /**
+     * Initialize server manager on page load
+     */
+    function initializeAllServers() {
+        // Wait for server manager to be ready
+        if (typeof serverManager !== 'undefined') {
+            initializeServerManager();
+            console.log('✅ Server Manager initialized');
+        } else {
+            // Try again if server manager isn't loaded yet
+            setTimeout(initializeAllServers, 100);
+        }
+    }
+
+    /**
+     * Toggle show all servers
+     */
+    function toggleShowAllServers() {
+        const allList = document.getElementById('allServersList');
+        const serverButtonsGrid = document.getElementById('serverButtons');
+        const btn = document.getElementById('showAllBtn');
         
-        const videoPlayer = document.getElementById('videoPlayer');
+        const isHidden = allList.classList.contains('hidden');
         
-        // Simply set the src - no complex handling
-        videoPlayer.src = url;
+        if (isHidden) {
+            // Show all servers
+            console.log('Showing all servers');
+            allList.classList.remove('hidden');
+            allList.style.display = 'grid';
+            serverButtonsGrid.classList.remove('hidden');
+            serverButtonsGrid.style.display = 'grid';
+            btn.textContent = 'Hide All Servers';
+            populateAllServers();
+        } else {
+            // Hide all servers
+            console.log('Hiding all servers');
+            allList.classList.add('hidden');
+            allList.style.display = 'none';
+            serverButtonsGrid.classList.add('hidden');
+            serverButtonsGrid.style.display = 'none';
+            btn.textContent = 'Show All Servers (4)';
+        }
+    }
+
+    /**
+     * Populate all servers list
+     */
+    function populateAllServers() {
+        const container = document.getElementById('allServersList');
+        if (!container) return;
         
-        // Hide loading after a short delay
-        setTimeout(() => {
-            playerLoading.classList.add('hidden');
-            serverStatus.textContent = 'Stream Ready';
-        }, 2000);
+        container.innerHTML = '';
+
+        // Get ALL servers
+        const allServers = serverManager.getAllServers();
+        console.log('📺 Populating all servers, count:', allServers.length);
+
+        allServers.forEach((server) => {
+            console.log('Adding server button:', server.name);
+            const btn = createServerButton(server, true); // true = hideStatus
+            container.appendChild(btn);
+        });
+        
+        console.log('✅ All servers populated, total buttons:', container.children.length);
     }
 
     // Track current server index
@@ -632,52 +1244,379 @@
         document.getElementById('watchTitle').textContent = decodeURIComponent(title) || 'Unknown Title';
         document.getElementById('watchType').textContent = mediaType === 'show' ? 'TV Series' : 'Movie';
         document.getElementById('watchYear').textContent = new Date().getFullYear();
-        document.getElementById('watchRating').textContent = '★★★★★ 8.5/10';
-        document.getElementById('watchOverview').textContent = 'Select a server below to start streaming. All servers support high quality video with minimal lag.';
-    } catch (error) {
-        console.error('Error populating page:', error);
-    }
+        document.getElementById('watchRating').textContent = '8.5/10';
 
-    // Initialize on page load - handle both cases (DOM loaded or loading)
-    function initializeWatch() {
-        console.log('Initializing watch page - ID:', movieId);
-        
+        // Fetch movie/show details from TMDB
         if (movieId) {
-            // Fetch streams immediately
-            fetchStreams();
-        } else {
-            document.getElementById('serverStatus').textContent = 'Error: No movie selected';
+            fetchMovieDetails(movieId, mediaType);
         }
-        
-        // Save to recently watched
-        if (movieId && mediaType && title) {
-            try {
-                lumiereStorage.addToRecentlyWatched({
-                    id: movieId,
-                    title: decodeURIComponent(title),
-                    type: mediaType,
-                    poster_path: null
-                });
-                console.log('Added to recently watched:', movieId);
-            } catch (error) {
-                console.error('Error saving to recently watched:', error);
+
+        // Only show TV selector for shows
+        if (mediaType === 'show') {
+            document.getElementById('tvSelector').classList.remove('hidden');
+            loadShowSeasons();
+        } else {
+            // Hide the TV selector for movies
+            document.getElementById('tvSelector').classList.add('hidden');
+        }
+    } catch (e) {
+        console.error('Error initializing watch page:', e);
+    }
+
+    /**
+     * Fetch movie/show details from TMDB
+     */
+    async function fetchMovieDetails(id, type) {
+        try {
+            const endpoint = type === 'show' ? 'tv' : 'movie';
+            const response = await fetch(`${API_BASE_URL}/${endpoint}/${id}?api_key=${TMDB_API_KEY}`);
+            const data = await response.json();
+            
+            if (data) {
+                // Update overview
+                if (data.overview) {
+                    document.getElementById('watchOverview').textContent = data.overview;
+                }
+                
+                // Update release year
+                if (data.release_date || data.first_air_date) {
+                    const date = data.release_date || data.first_air_date;
+                    const year = new Date(date).getFullYear();
+                    document.getElementById('watchYear').textContent = year;
+                }
+                
+                // Update rating
+                if (data.vote_average) {
+                    document.getElementById('watchRating').textContent = `${data.vote_average.toFixed(1)}/10`;
+                }
+                
+                console.log('✅ Movie details loaded:', data);
             }
+        } catch (error) {
+            console.error('Error fetching movie details:', error);
+            // Keep the default overview if fetch fails
+            document.getElementById('watchOverview').textContent = 'Select a server below to start streaming. All servers support high quality video with minimal lag.';
         }
     }
 
-    // Initialize watch based on document readyState
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initializeWatch);
-    } else {
-        // DOM is already loaded
-        initializeWatch();
+    // Store current selection for TV shows
+    let currentShowSelection = {
+        season: null,
+        episode: null
+    };
+
+    /**
+     * Load seasons for a TV show
+     */
+    async function loadShowSeasons() {
+        try {
+            console.log('Loading seasons for TV ID:', movieId);
+            const response = await fetch(`${API_BASE_URL}/tv/${movieId}?api_key=${TMDB_API_KEY}`);
+            const data = await response.json();
+            
+            console.log('Seasons data:', data);
+            
+            if (data.seasons && data.seasons.length > 0) {
+                const seasonDropdown = document.getElementById('seasonDropdown');
+                seasonDropdown.innerHTML = '';
+                
+                data.seasons.forEach(season => {
+                    if (season.season_number > 0) { // Skip season 0 (specials)
+                        const item = document.createElement('div');
+                        item.className = 'custom-dropdown-item';
+                        item.textContent = `Season ${season.season_number}`;
+                        item.onclick = () => selectSeason(season.season_number, item);
+                        seasonDropdown.appendChild(item);
+                    }
+                });
+                
+                console.log('Seasons loaded, count:', seasonDropdown.children.length);
+                
+                // Auto-load first season
+                if (seasonDropdown.children.length > 0) {
+                    selectSeason(data.seasons.find(s => s.season_number > 0).season_number, seasonDropdown.firstChild);
+                }
+            } else {
+                console.warn('No seasons found for this show');
+            }
+        } catch (error) {
+            console.error('Error loading seasons:', error);
+        }
+    }
+
+    /**
+     * Load episodes for a selected season
+     */
+    async function loadSeasonEpisodes(seasonNum) {
+        try {
+            console.log('Loading episodes for season:', seasonNum);
+            const response = await fetch(`${API_BASE_URL}/tv/${movieId}/season/${seasonNum}?api_key=${TMDB_API_KEY}`);
+            const data = await response.json();
+            
+            console.log('Episodes data:', data);
+            
+            if (data.episodes && data.episodes.length > 0) {
+                const episodesGrid = document.getElementById('episodesGrid');
+                episodesGrid.innerHTML = '';
+                
+                data.episodes.forEach(episode => {
+                    // Create episode thumbnail card
+                    const episodeCard = document.createElement('div');
+                    episodeCard.className = 'episode-thumbnail';
+                    episodeCard.dataset.episode = episode.episode_number;
+                    
+                    // Get still image from TMDB
+                    const stillPath = episode.still_path ? `https://image.tmdb.org/t/p/w500${episode.still_path}` : '';
+                    const posterFallback = `https://via.placeholder.com/500x280?text=Ep+${episode.episode_number}`;
+                    
+                    episodeCard.innerHTML = `
+                        <img src="${stillPath || posterFallback}" alt="Episode ${episode.episode_number}" onerror="this.src='${posterFallback}'">
+                        <div class="episode-info">
+                            <div class="episode-number">Season ${seasonNum} • Episode ${episode.episode_number}</div>
+                            <div class="episode-name">${episode.name || `Episode ${episode.episode_number}`}</div>
+                        </div>
+                    `;
+                    
+                    // Click to select and play episode
+                    episodeCard.addEventListener('click', () => {
+                        selectAndPlayEpisode(seasonNum, episode.episode_number, episodeCard);
+                    });
+                    
+                    episodesGrid.appendChild(episodeCard);
+                });
+                
+                console.log('Episodes loaded, count:', data.episodes.length);
+                
+                // Auto-load first episode
+                if (data.episodes.length > 0) {
+                    selectAndPlayEpisode(seasonNum, data.episodes[0].episode_number, episodesGrid.firstChild);
+                }
+            } else {
+                console.warn('No episodes found for season', seasonNum);
+            }
+        } catch (error) {
+            console.error('Error loading episodes:', error);
+        }
+    }
+
+    /**
+     * Select and play episode
+     */
+    function selectAndPlayEpisode(season, episode, episodeCard) {
+        // Update selection styling
+        document.querySelectorAll('.episode-thumbnail').forEach(card => {
+            card.classList.remove('selected');
+        });
+        episodeCard.classList.add('selected');
+        
+        // Update current selection
+        currentShowSelection.season = season;
+        currentShowSelection.episode = episode;
+        
+        // Auto-play the episode
+        loadStreamWithEpisode(season, episode);
+    }
+
+    /**
+     * Load stream for TV episode using current server
+     */
+    async function loadStreamWithEpisode(season, episode) {
+        try {
+            console.log(`Loading stream for Season ${season}, Episode ${episode}`);
+            
+            // Get the currently selected server
+            const selectedServer = serverManager.getSelectedServer();
+            if (!selectedServer) {
+                console.warn('No server selected');
+                serverStatus.textContent = 'Please select a server';
+                return;
+            }
+            
+            const server = selectedServer;
+            
+            // Build the stream URL for this specific episode
+            let streamUrl = '';
+            
+            switch(server.id) {
+                case '2embed-cc':
+                    streamUrl = `https://www.2embed.cc/embedtv/${movieId}&s=${season}&e=${episode}`;
+                    break;
+                case 'vidsrc':
+                    streamUrl = `https://vidsrc-embed.ru/embed/tv/${movieId}/${season}/${episode}`;
+                    break;
+                case 'vidfast':
+                    streamUrl = `https://vidfast.pro/tv/${movieId}/${season}/${episode}?autoPlay=true`;
+                    break;
+                default:
+                    console.warn('Unknown server:', server.id);
+                    return;
+            }
+            
+            console.log('Episode Stream URL:', streamUrl);
+            
+            // Show loading
+            playerLoading.classList.remove('hidden');
+            serverStatus.textContent = `Loading from ${server.name}...`;
+            loadingSubtext.textContent = 'Please wait';
+            
+            // Load iframe with proper attributes
+            setTimeout(() => {
+                // Set iframe attributes instead of src to avoid premature loading
+                videoPlayer.setAttribute('src', streamUrl);
+                videoPlayer.setAttribute('referrerpolicy', 'no-referrer');
+                
+                console.log('✅ Episode stream loaded from:', server.name);
+                
+                // Hide loading after stream loads
+                setTimeout(() => {
+                    playerLoading.classList.add('hidden');
+                    serverStatus.textContent = `Playing from ${server.name}`;
+                    loadingSubtext.textContent = `Season ${season}, Episode ${episode}`;
+                }, 2000);
+            }, 500);
+        } catch (error) {
+            console.error('Error loading episode stream:', error);
+            serverStatus.textContent = 'Error loading episode';
+            loadingSubtext.textContent = error.message;
+        }
+    }
+
+    /**
+     * Toggle season dropdown
+     */
+    if (document.getElementById('seasonBtn')) {
+        document.getElementById('seasonBtn').addEventListener('click', () => {
+            const dropdown = document.getElementById('seasonDropdown');
+            dropdown.classList.toggle('hidden');
+        });
+    }
+
+    /**
+     * Handle season selection
+     */
+    function selectSeason(seasonNum, element) {
+        document.getElementById('seasonBtnText').textContent = element.textContent;
+        document.getElementById('seasonDropdown').classList.add('hidden');
+        
+        // Remove previous selection styling
+        document.querySelectorAll('#seasonDropdown .custom-dropdown-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+        element.classList.add('selected');
+        
+        // Load episodes for this season
+        loadSeasonEpisodes(seasonNum);
     }
     
-    // Initialize remote listener
-    initializeRemoteListener();
+    /**
+     * Remove old episode button handlers (no longer needed)
+     */
+    if (document.getElementById('episodeBtn')) {
+        document.getElementById('episodeBtn').style.display = 'none';
+    }
+    
+    if (document.getElementById('loadEpisodeBtn')) {
+        document.getElementById('loadEpisodeBtn').style.display = 'none';
+    }
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+        const seasonBtn = document.getElementById('seasonBtn');
+        const seasonDropdown = document.getElementById('seasonDropdown');
+        if (seasonBtn && seasonDropdown && !e.target.closest('#seasonBtn') && !e.target.closest('#seasonDropdown')) {
+            seasonDropdown.classList.add('hidden');
+        }
+        
+        const episodeBtn = document.getElementById('episodeBtn');
+        const episodeDropdown = document.getElementById('episodeDropdown');
+        if (episodeBtn && episodeDropdown && !e.target.closest('#episodeBtn') && !e.target.closest('#episodeDropdown')) {
+            episodeDropdown.classList.add('hidden');
+        }
+    });
 
-    // ========================
-    // REMOTE CONTROL HANDLER
+    /**
+     * Handle horizontal scrolling on mobile for episodes grid
+     */
+    const episodesGrid = document.getElementById('episodesGrid');
+    const scrollLeftBtn = document.getElementById('scrollLeftBtn');
+    const scrollRightBtn = document.getElementById('scrollRightBtn');
+    
+    if (episodesGrid) {
+        let isScrolling = false;
+        let startX = 0;
+        let startY = 0;
+
+        // Touch event handlers
+        episodesGrid.addEventListener('touchstart', (e) => {
+            isScrolling = false;
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+        }, { passive: true });
+
+        episodesGrid.addEventListener('touchmove', (e) => {
+            const currentX = e.touches[0].clientX;
+            const currentY = e.touches[0].clientY;
+            const diffX = Math.abs(currentX - startX);
+            const diffY = Math.abs(currentY - startY);
+
+            // If horizontal movement is greater than vertical, allow horizontal scroll
+            if (diffX > diffY && diffX > 5) {
+                isScrolling = true;
+                // Prevent page scroll during horizontal scroll
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        episodesGrid.addEventListener('touchend', () => {
+            isScrolling = false;
+        }, { passive: true });
+        
+        // Mouse wheel / trackpad scrolling
+        episodesGrid.addEventListener('wheel', (e) => {
+            // Only intercept vertical wheel/trackpad scrolls
+            if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+                e.preventDefault();
+                // Convert vertical scroll to horizontal scroll
+                episodesGrid.scrollLeft += e.deltaY;
+            } else if (e.deltaX !== 0) {
+                // Allow horizontal wheel events naturally
+                e.preventDefault();
+                episodesGrid.scrollLeft += e.deltaX;
+            }
+        }, { passive: false });
+        
+        // Show/hide scroll buttons based on scroll position
+        function updateScrollButtons() {
+            const canScrollLeft = episodesGrid.scrollLeft > 0;
+            const canScrollRight = episodesGrid.scrollLeft < (episodesGrid.scrollWidth - episodesGrid.clientWidth - 10);
+            
+            if (scrollLeftBtn) {
+                scrollLeftBtn.style.display = canScrollLeft ? 'block' : 'none';
+            }
+            if (scrollRightBtn) {
+                scrollRightBtn.style.display = canScrollRight ? 'block' : 'none';
+            }
+        }
+        
+        // Update on load
+        setTimeout(updateScrollButtons, 100);
+        episodesGrid.addEventListener('scroll', updateScrollButtons);
+        window.addEventListener('resize', updateScrollButtons);
+        
+        // Scroll button click handlers
+        if (scrollLeftBtn) {
+            scrollLeftBtn.addEventListener('click', () => {
+                episodesGrid.scrollBy({ left: -150, behavior: 'smooth' });
+            });
+        }
+        
+        if (scrollRightBtn) {
+            scrollRightBtn.addEventListener('click', () => {
+                episodesGrid.scrollBy({ left: 150, behavior: 'smooth' });
+            });
+        }
+    }
+
     // ========================
     
     let playerState = {
@@ -903,17 +1842,18 @@
         }
     `;
     document.head.appendChild(style);
+
+    // Initialize remote listener and server manager on page load
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeRemoteListener();
+            initializeAllServers();
+        });
+    } else {
+        initializeRemoteListener();
+        initializeAllServers();
+    }
 </script>
 
 </body>
 </html>
-
-
-<script>
-    // Initialize remote listener when page loads
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initializeRemoteListener);
-    } else {
-        initializeRemoteListener();
-    }
-</script>
